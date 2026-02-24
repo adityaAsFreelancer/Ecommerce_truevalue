@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #5EC401;
+  --color-primary-hover: #4da801;
+  --color-primary-dark: #3a8001;
+
+  --color-secondary: #eef9e6;
+  --color-accent: #5EC401;
+
+  --color-background-white: #ffffff;
+  --color-background-soft: #F8FDF5;
+  --color-background-surface: #ffffff;
+
+  --font-display: "Inter", "Outfit", sans-serif;
+
+  --shadow-premium: 0 20px 40px -5px rgba(94, 196, 1, 0.15), 0 8px 10px -6px rgba(94, 196, 1, 0.1);
+}
+
+:root {
+  --primary: #5EC401;
+  --primary-hover: #4da801;
+  --primary-dark: #3a8001;
+  --secondary: #eef9e6;
+  --accent: #5EC401;
+  --bg-white: #ffffff;
+  --bg-soft: #F8FDF5;
+  --bg-surface: #ffffff;
+}
+
+@layer base {
+  body {
+    @apply font-display bg-white text-gray-900 transition-colors duration-500 antialiased;
+    background-color: var(--bg-soft);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-bold tracking-tight text-gray-900;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white px-6 py-3 rounded-2xl font-semibold shadow-md hover:bg-primary-hover hover:shadow-lg active:scale-95 transition-all duration-300 flex items-center justify-center gap-2;
+  }
+
+  .btn-icon-soft {
+    @apply p-3 rounded-full bg-secondary text-primary hover:bg-primary hover:text-white transition-all duration-300 active:scale-90 shadow-sm;
+  }
+
+  .card-premium {
+    @apply bg-white rounded-3xl p-5 shadow-md border border-gray-100/50 hover:shadow-xl transition-all duration-300;
+  }
+
+  .input-premium {
+    @apply w-full px-5 py-3.5 rounded-2xl bg-white border border-gray-100 shadow-sm focus:border-primary/30 focus:ring-4 focus:ring-primary/10 transition-all outline-none placeholder:text-gray-400 text-gray-700;
+  }
+
+  .nav-item-active {
+    @apply text-primary bg-secondary/80 font-medium;
+  }
+}
+
+* {
+  @apply selection:bg-primary/20 selection:text-primary;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-50;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-200 rounded-full border-4 border-transparent bg-clip-content hover:bg-gray-300 transition-colors;
+}
+
+@keyframes slideUpNav {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up-nav {
+  animation: slideUpNav 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

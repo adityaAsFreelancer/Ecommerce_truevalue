@@ -1,0 +1,9 @@
+node_modules/
+.env
+true-value-backend/node_modules/
+true-value-frontend/node_modules/
+true-value-backend/.env
+true-value-frontend/.env
+true-value-backend/database.sqlite
+true-value-frontend/dist/
+*.log

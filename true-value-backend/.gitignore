@@ -1,0 +1,8 @@
+node_modules/
+.env
+database.sqlite
+*.log
+seeder_error.txt
+seeder_error_log.txt
+startup.log
+debug.log

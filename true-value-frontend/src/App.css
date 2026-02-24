@@ -1,0 +1,12 @@
+/* Main layout container reset */
+.app-container {
+  @apply max-w-[1440px] mx-auto px-4 md:px-8 overflow-hidden;
+}
+
+.section-padding {
+  @apply py-16 md:py-24;
+}
+
+.glass-morphism {
+  @apply bg-white/70 backdrop-blur-xl border border-white/20;
+}

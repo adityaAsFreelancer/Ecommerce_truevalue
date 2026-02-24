@@ -1,0 +1,571 @@
+import React, { createContext, useContext, useState } from 'react';
+
+const LanguageContext = createContext();
+
+export const LanguageProvider = ({ children }) => {
+    const [language, setLanguage] = useState('en');
+
+    const toggleLanguage = () => {
+        setLanguage(prev => prev === 'en' ? 'hi' : 'en');
+    };
+
+    const translations = {
+        en: {
+            nav: {
+                home: "Home",
+                products: "Products",
+                categories: "Categories",
+                cart: "Cart",
+                login: "Login",
+                search: "Search for products...",
+                account: "Account",
+                orders: "Orders",
+                help: "Help",
+                myCart: "My Cart",
+                suggestions: "Suggested Products",
+                noMatches: "No matches found",
+                tryGeneric: "Try searching for generic terms like 'Milk' or 'Oil'.",
+                notifications: "Notifications",
+                markRead: "Mark all read",
+                noNotifications: "No notifications yet",
+                finding: "Finding products...",
+                topResults: "Top Results",
+                placeholderLong: "What can we get you today?"
+            },
+            hero: {
+                fresh: "Fresh",
+                groceries: " Groceries,",
+                deliveredFast: "Delivered Fast.",
+                subtitle: "Experience the freshest picks delivered to your door in minutes.",
+                freeDelivery: "Free Delivery",
+                rating: "4.9/5 Rating",
+                deliveringTo: "Delivering To",
+                yourLocation: "Your Location"
+            },
+            categories: {
+                vegetables: "Vegetables",
+                fruits: "Fruits",
+                meat: "Meat & Poultry",
+                dairy: "Dairy",
+                cooking: "Cooking Essentials",
+                beverages: "Beverages",
+                snacks: "Snacks",
+                women: "Women's Care",
+                baby: "Baby Products",
+                personal: "Personal Care",
+                clothing: "Clothing",
+                electronics: "Electronics",
+                pharmacy: "Pharmacy",
+                tools: "Tools & Hardware",
+                garden: "Garden",
+                viewAll: "View All",
+                seafood: "Seafood",
+                frozen: "Frozen Foods",
+                bakery: "Bakery",
+                water: "Water",
+                home: "Home & Kitchen",
+                stationary: "Stationery",
+                pet: "Pet Supplies",
+                sports: "Sports",
+                explore: "Explore Categories",
+                quickAccess: "Quick Access"
+            },
+            common: {
+                premiumQuality: "Premium Quality",
+                seeAll: "See All",
+                currency: "$",
+                perUnit: "each"
+            },
+            filters: {
+                title: "Filters",
+                reset: "Reset All",
+                price: "Price Range",
+                categories: "Categories",
+                brands: "Brands",
+                rating: "Customer Rating",
+                features: "Features",
+                clear: "Clear All",
+                up: "& Up",
+                deliveryTime: "Delivery Time"
+            },
+            sort: {
+                relevance: "Relevance",
+                priceLowHigh: "Price: Low-High",
+                popularity: "Popularity",
+                toolsFound: "high-performance tools found"
+            },
+            product: {
+                reviews: "Reviews",
+                addToCart: "Add to Cart",
+                buyNow: "Buy Now",
+                specifications: "Technical Specifications",
+                related: "Related Products",
+                highlights: "Highlights",
+                quality: "Verified Quality",
+                topRated: "Top-Rated Choice",
+                outOfStock: "Out of Stock",
+                added: "Added!",
+                specHighlights: "Specifications Highlights",
+                loading: "Synchronizing Digital Asset...",
+                exploreFleet: "Explore Fleet",
+                ingredients: "Composition",
+                usage: "Operations"
+            },
+            listing: {
+                results: "Results for",
+                allProducts: "All Products",
+                found: "Found",
+                items: "items matching your criteria",
+                noProducts: "No products found",
+                noMatch: "We couldn't find any products matching your current filters or search terms.",
+                clearFilters: "Clear all filters",
+                foundLabel: "Items Found",
+                searchLabel: "Search:"
+            },
+            delivery: {
+                sameDay: "Same Day",
+                nextDay: "Next Day",
+                days23: "2-3 Days",
+                days35: "3-5 Days"
+            },
+            flashSale: {
+                title: "Flash Sale",
+                protocol: "Limited Time Offer",
+                tagline: "High-velocity asset acquisition at suboptimal pricing. Valid until tactical window closure.",
+                countdown: "Hurry! Ends In",
+                hours: "Hours",
+                mins: "Mins",
+                secs: "Secs",
+                intercept: "Buy Now"
+            },
+            cart: {
+                title: "Your Cart",
+                empty: "Your cart is empty",
+                emptyText: "Looks like you haven't added anything to your cart yet.",
+                startShopping: "Start Shopping",
+                subtotal: "Subtotal",
+                shipping: "Estimated Shipping",
+                tax: "Estimated Tax",
+                total: "Total",
+                checkout: "Proceed to Checkout",
+                calcAtCheckout: "Calculated at checkout",
+                points: "TrueValue Rewards members earn points on this order.",
+                savings: "Total Savings",
+                joinNow: "Join now"
+            },
+            checkout: {
+                title: "Checkout",
+                subtitle: "Confirm your order items and delivery address.",
+                step1: "Shipping",
+                step2: "Payment",
+                step3: "Review",
+                shippingAddress: "Delivery Address",
+                change: "Change",
+                edit: "Edit",
+                paymentMethod: "How will you pay?",
+                cardName: "Card Owner Name",
+                cardNumber: "16-Digit Card Number",
+                expiry: "Expiry (MM/YY)",
+                cvv: "3-Digit Code (CVV)",
+                saveCard: "Save card details",
+                reviewItems: "Check Your Items",
+                orderSummary: "Order Total",
+                placeOrder: "Confirm Order",
+                promo: "Discount Code",
+                apply: "Apply",
+                secure: "Safe and Secure Payment",
+                agree: "By clicking above, you agree to our simple terms.",
+                protocolA: "Credit / Debit Card",
+                hyperpay: "UPI (PhonePe, GPay)",
+                omnivault: "Wallets",
+                direct: "Net Banking",
+                postpay: "Pay on Delivery (Cash)",
+                itemsInManifest: "Items in your order",
+                assetBase: "Asset Base",
+                logistics: "Logistics",
+                taxes: "Taxes (EST)",
+                totalManifest: "Total Manifest",
+                voucherKey: "Voucher Key",
+                processing: "Processing...",
+                free: "FREE",
+                yieldBonus: "Yield Bonus",
+                authorize: "Authorize Selection",
+                modifyRoute: "Modify Route",
+                returnFleet: "Return to Fleet",
+                fleetMap: "Fleet Map",
+                shippingTab: "Shipping",
+                paymentTab: "Payment",
+                reviewTab: "Review",
+                voucherValidated: "Voucher Validated!",
+                invalidKey: "Invalid Key",
+                sysError: "Logistics hub unreachable",
+                assistance: "Protocol assistance required?",
+                contactOps: "Contact Operations"
+            },
+            errors: {
+                required: "This is required",
+                invalidEmail: "Enter a correct email",
+                invalidPhone: "Enter a 10-digit phone number",
+                shortPassword: "Password must be longer",
+                noMatch: "Does not match",
+                systemError: "Something went wrong. Try again.",
+                networkError: "No internet connection"
+            },
+            auth: {
+                loginTitle: "Welcome",
+                loginSubtitle: "Enter your email and password to start.",
+                signupTitle: "Join Us",
+                signupSubtitle: "Create a free account to track your orders.",
+                emailLabel: "Email",
+                passwordLabel: "Password",
+                forgotPassword: "Forgot Password?",
+                loginButton: "Login",
+                signupButton: "Create Account",
+                noAccount: "Don't have an account?",
+                hasAccount: "Already have an account?",
+                socialOr: "Or use",
+                nameLabel: "Full Name",
+                newsletterNotice: "Sign me up for the TrueValue newsletter for project inspiration, exclusive deals, and expert tips.",
+                agreeTerms: "By creating an account, you agree to TrueValue's",
+                privacyPolicy: "Privacy Policy",
+                termsOfService: "Terms of Service",
+                authNote: "By committing, you authorize TrueValue to initiate logistics protocols V4.2."
+            },
+            offers: {
+                flashLabel: "Flash Offer",
+                grabLabel: "Grab Offer",
+                slides: [
+                    {
+                        title: "Summer Fresh Sale",
+                        subtitle: "Up to 50% Off on Fruits",
+                        description: "Get the freshest organic picks delivered from local farms to your door."
+                    },
+                    {
+                        title: "Super Saver Deals",
+                        subtitle: "Flat 20% Off on Groceries",
+                        description: "Stock up on pantry essentials with our weekly super saver discounts."
+                    },
+                    {
+                        title: "Healthy Mornings",
+                        subtitle: "Dairy & Bakery Combo Deals",
+                        description: "Fuel your day with our high-protein dairy and freshly baked goodies."
+                    }
+                ]
+            },
+            footer: {
+                customerService: "Customer Support",
+                resources: "Useful Links",
+                shop: "Go to Shop",
+                newsletter: "Updates",
+                newsletterText: "Get news about new products and deals.",
+                subscribe: "Sign Up",
+                contact: "Call Us",
+                rights: "© 2026 True Value. All rights reserved.",
+                privacy: "Privacy",
+                accessibility: "Easy Use",
+                terms: "Terms of Use",
+                links: {
+                    contact: "Contact Us",
+                    track: "Track Order",
+                    shipping: "Shipping Policy",
+                    faq: "FAQ",
+                    help: "Help Center",
+                    tips: "Tips & Advice",
+                    stores: "Store Locator",
+                    deals: "Weekly Deals",
+                    rewards: "Rewards Program",
+                    calculator: "Project Calculator",
+                    allProducts: "All Products",
+                    homePage: "Home Page",
+                    privacy: "Privacy Policy"
+                },
+                emailPlaceholder: "Email address"
+            }
+        },
+        hi: {
+            nav: {
+                home: "होम",
+                products: "सामान",
+                categories: "कैटेगरी",
+                cart: "मेरा झोला",
+                login: "नाम लिखो (Login)",
+                search: "सामान ढूंढें...",
+                account: "मेरी प्रोफाइल",
+                orders: "मेरा सामान",
+                help: "मदद",
+                myCart: "मेरा झोला",
+                suggestions: "ये भी देखें",
+                noMatches: "कुछ नहीं मिला",
+                tryGeneric: "मिल्क या तेल जैसे नाम लिखकर देखें।",
+                notifications: "खबरें",
+                markRead: "सब पढ़ लिए",
+                noNotifications: "अभी कोई खबर नहीं है",
+                finding: "सामान ढूंढ रहे हैं...",
+                topResults: "सबसे अच्छे नतीजे",
+                placeholderLong: "आज आप क्या लेना चाहेंगे?"
+            },
+            hero: {
+                fresh: "ताज़ा",
+                groceries: " सामान,",
+                deliveredFast: "जल्दी घर पर।",
+                subtitle: "ताज़ा सामान बस कुछ ही मिनटों में आपके घर तक।",
+                freeDelivery: "मुफ्त डिलीवरी",
+                rating: "4.9/5 रेटिंग",
+                deliveringTo: "यहाँ भेज रहे हैं",
+                yourLocation: "आपका ठिकाना"
+            },
+            categories: {
+                vegetables: "ताज़ी सब्जियां",
+                fruits: "ताज़े फल",
+                meat: "मांस और मछली",
+                dairy: "दूध और दही",
+                cooking: "रसोई का सामान",
+                beverages: "पीने की चीज़ें",
+                snacks: "चटपटा नाश्ता",
+                women: "महिला देखभाल",
+                baby: "बच्चों का सामान",
+                personal: "नहाने का सामान",
+                clothing: "कपड़े",
+                electronics: "बिजली का सामान",
+                pharmacy: "दवाईयाँ",
+                tools: "औज़ार और हार्डवेयर",
+                garden: "बागीचा",
+                viewAll: "सब देखें",
+                seafood: "मछली और समुद्री भोजन",
+                frozen: "जमा हुआ खाना (Frozen)",
+                bakery: "बेकरी",
+                water: "पानी",
+                home: "घर और रसोई",
+                stationary: "पढ़ाई-लिखाई का सामान",
+                pet: "पालतू जानवरों का सामान",
+                sports: "खेलकूद का सामान",
+                explore: "कैटेगरी देखें",
+                quickAccess: "जल्दी देखें"
+            },
+            common: {
+                premiumQuality: "सबसे अच्छी क्वालिटी",
+                seeAll: "सब देखें",
+                currency: "₹",
+                perUnit: "हर एक"
+            },
+            filters: {
+                title: "छाँटें",
+                reset: "सब साफ़ करें",
+                price: "दाम",
+                categories: "कैटेगरी",
+                brands: "कंपनी (ब्रांड)",
+                rating: "रेटिंग",
+                features: "खूबियाँ",
+                clear: "हटाएं",
+                up: "से ज़्यादा",
+                deliveryTime: "डिलीवरी का समय"
+            },
+            sort: {
+                relevance: "काम का सामान",
+                priceLowHigh: "दाम: कम से ज़्यादा",
+                popularity: "मशहूर सामान",
+                toolsFound: "सामान मिले"
+            },
+            product: {
+                reviews: "लोगों की राय",
+                addToCart: "झोले में डालें",
+                buyNow: "अभी खरीदें",
+                specifications: "सामान की जानकारी",
+                related: "मिलता-जुलता सामान",
+                highlights: "खास बातें",
+                quality: "पक्का और अच्छा",
+                topRated: "सबसे अच्छा",
+                outOfStock: "खत्म हो गया है",
+                added: "जुड़ गया!",
+                specHighlights: "सामान की खास जानकारी",
+                loading: "जानकारी ला रहे हैं...",
+                exploreFleet: "सब देखें",
+                ingredients: "सामग्री",
+                usage: "इस्तेमाल का तरीका"
+            },
+            listing: {
+                results: "नतीजे",
+                allProducts: "सारा सामान",
+                found: "मिले",
+                items: "चीज़ें मिलीं",
+                noProducts: "कुछ नहीं मिला",
+                noMatch: "हमें ऐसा कोई सामान नहीं मिला।",
+                clearFilters: "छाँटना बंद करें",
+                foundLabel: "सामान मिले",
+                searchLabel: "खोज:"
+            },
+            delivery: {
+                sameDay: "आज ही",
+                nextDay: "कल तक",
+                days23: "2-3 दिन",
+                days35: "3-5 दिन"
+            },
+            flashSale: {
+                title: "फटाफट सेल",
+                protocol: "सीमित समय के लिए ऑफर",
+                tagline: "सबसे कम दाम पर सबसे अच्छा सामान। मौका जाने से पहले खरीदें।",
+                countdown: "जल्दी करें! खत्म होने वाला है:",
+                hours: "घंटे",
+                mins: "मिनट",
+                secs: "सेकंड",
+                intercept: "अभी लें"
+            },
+            cart: {
+                title: "आपका झोला (कार्ट)",
+                empty: "आपका झोला खाली है",
+                emptyText: "अभी आपने कुछ नहीं चुना है।",
+                startShopping: "सामान देखें",
+                subtotal: "कुल दाम",
+                shipping: "भेजने का खर्चा",
+                tax: "सरकारी टैक्स",
+                total: "पूरा पैसा",
+                checkout: "पैसे देने के लिए आगे बढ़ें",
+                calcAtCheckout: "अगले कदम पर पता चलेगा",
+                points: "इस ऑर्डर पर इनाम मिलें गे।",
+                savings: "आपकी बचत",
+                joinNow: "अभी जुड़ें"
+            },
+            checkout: {
+                title: "पैसे दें और ऑर्डर करें",
+                subtitle: "अपना सामान और पता पक्का करें।",
+                step1: "पता",
+                step2: "पैसे",
+                step3: "चेक करें",
+                shippingAddress: "सामान भेजने का पता",
+                change: "बदलें",
+                edit: "सुधारें",
+                paymentMethod: "पैसे कैसे देंगे?",
+                cardName: "कार्ड पर लिखा नाम",
+                cardNumber: "16-अंकों वाला कार्ड नंबर",
+                expiry: "महीना/साल (MM/YY)",
+                cvv: "3-अंकों वाला कोड (CVV)",
+                saveCard: "कार्ड याद रखें",
+                reviewItems: "अपना सामान देखें",
+                orderSummary: "कुल पैसा",
+                placeOrder: "ऑर्डर पक्का करें",
+                promo: "छूट वाला कोड",
+                apply: "लागू करें",
+                secure: "सुरक्षित भुगतान",
+                agree: "ऑर्डर बटन दबाने का मतलब है कि आप सहमत हैं।",
+                protocolA: "एटीएम या क्रेडिट कार्ड",
+                hyperpay: "यूपीआई (PhonePe, GPay)",
+                omnivault: "बटुआ (Wallet)",
+                direct: "बैंक से सीधे (Net Banking)",
+                postpay: "सामान मिलने पर पैसे दें (Cash)",
+                itemsInManifest: "आपके ऑर्डर का सामान",
+                assetBase: "सामान की कीमत",
+                logistics: "डिलीवरी",
+                taxes: "टैक्स",
+                totalManifest: "कुल रकम",
+                voucherKey: "कूपन कोड",
+                processing: "चल रहा है...",
+                free: "मुफ्त",
+                yieldBonus: "खास छूट",
+                authorize: "पक्का करें",
+                modifyRoute: "पता बदलें",
+                returnFleet: "वापस सामान पर",
+                fleetMap: "पता लिस्ट",
+                shippingTab: "शिपिंग",
+                paymentTab: "पेमेंट",
+                reviewTab: "चेक करें",
+                voucherValidated: "कूपन लग गया!",
+                invalidKey: "गलत कोड",
+                sysError: "सिस्टम काम नहीं कर रहा",
+                assistance: "मदद चाहिए?",
+                contactOps: "संपर्क करें"
+            },
+            errors: {
+                required: "यह भरना ज़रूरी है",
+                invalidEmail: "सही ईमेल लिखें",
+                invalidPhone: "10-अंकों वाला मोबाइल नंबर लिखें",
+                shortPassword: "पासवर्ड थोड़ा बड़ा रखें",
+                noMatch: "मेल नहीं खाता",
+                systemError: "कुछ गड़बड़ हुई। फिर कोशिश करें।",
+                networkError: "इंटरनेट नहीं चल रहा है"
+            },
+            auth: {
+                loginTitle: "स्वागत है",
+                loginSubtitle: "शुरू करने के लिए अपना ईमेल और पासवर्ड लिखें।",
+                signupTitle: "हमसे जुड़ें",
+                signupSubtitle: "अपने ऑर्डर देखने के लिए नया खाता बनाएं।",
+                emailLabel: "ईमेल",
+                passwordLabel: "पासवर्ड",
+                forgotPassword: "पासवर्ड भूल गए?",
+                loginButton: "लॉग इन करें",
+                signupButton: "खाता बनाएं",
+                noAccount: "खाता नहीं है?",
+                hasAccount: "पहले से खाता है?",
+                rememberMe: "लॉग इन रहें",
+                socialOr: "या इनका इस्तेमाल करें",
+                nameLabel: "पूरा नाम",
+                newsletterNotice: "मुझे TrueValue न्यूज़लेटर के लिए साइन अप करें ताकि मैं नए आइडिया, खास ऑफर और जानकारी पा सकूँ।",
+                agreeTerms: "खाता बनाकर, आप TrueValue की सहमतियों को मानते हैं:",
+                privacyPolicy: "गोपनीयता नियम",
+                termsOfService: "इस्तेमाल की शर्तें",
+                authNote: "खाता बनाकर या आर्डर देकर आप TrueValue के नियमों को स्वीकार करते हैं।"
+            },
+            offers: {
+                flashLabel: "खास ऑफर",
+                grabLabel: "फायदा उठाएं",
+                slides: [
+                    {
+                        title: "गर्मी वाली ताज़ा सेल",
+                        subtitle: "फलों पर 50% तक की छूट",
+                        description: "खेतों से ताज़ा और शुद्ध फल सीधे आपके घर तक।"
+                    },
+                    {
+                        title: "बड़ी बचत वाली डील",
+                        subtitle: "राशन पर सीधी 20% छूट",
+                        description: "घर के ज़रूरी सामान पर पाएं हर हफ्ते सबसे अच्छी बचत।"
+                    },
+                    {
+                        title: "सेहतमंद सुबह",
+                        subtitle: "दूध और बेकरी कॉम्बो ऑफर",
+                        description: "ताज़ा दूध और बेकरी के सामान के साथ अपनी सुबह को बेहतर बनाएं।"
+                    }
+                ]
+            },
+            footer: {
+                customerService: "मदद और सहायता",
+                resources: "जरूरी बातें",
+                shop: "दुकान पर जाएं",
+                newsletter: "नई खबरें",
+                newsletterText: "नए सामान और छूट की जानकारी पाएं।",
+                subscribe: "नाम जोड़ें",
+                contact: "हमें फोन करें",
+                rights: "© 2026 True Value. सब अधिकार सुरक्षित।",
+                privacy: "गोपनीयता",
+                accessibility: "इस्तेमाल में आसान",
+                terms: "नियम और शर्तें",
+                links: {
+                    contact: "हमसे बात करें",
+                    track: "अपना सामान देखें",
+                    shipping: "भेजने के नियम",
+                    faq: "सवाल-जवाब",
+                    help: "मदद केंद्र",
+                    tips: "सलाह और सुझाव",
+                    stores: "दुकान का पता",
+                    deals: "हफ्ते की छूट",
+                    rewards: "ईनाम प्रोग्राम",
+                    calculator: "औज़ार कैलकुलेटर",
+                    allProducts: "सारा सामान",
+                    homePage: "पहला पन्ना",
+                    privacy: "गोपनीयता नियम"
+                },
+                emailPlaceholder: "ईमेल पता"
+            }
+        }
+    };
+
+    const t = (section, key) => {
+        return translations[language][section]?.[key] || key;
+    };
+
+    return (
+        <LanguageContext.Provider value={{ language, toggleLanguage, t }}>
+            {children}
+        </LanguageContext.Provider>
+    );
+};
+
+export const useLanguage = () => useContext(LanguageContext);
