@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://ecommerce-truevalue.onrender.com/api';
 
 const api = async (endpoint, options = {}) => {
     // Priority: options.token > localStorage
