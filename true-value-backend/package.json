@@ -6,7 +6,8 @@
     "scripts": {
         "start": "node server.js",
         "start:cluster": "node cluster.js",
-        "dev": "nodemon server.js"
+        "dev": "nodemon server.js",
+       "build": "echo 'No build needed'"
     },
     "dependencies": {
         "algoliasearch": "^4.24.0",
