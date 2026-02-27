@@ -97,3 +97,55 @@
 .animate-slide-up-nav {
   animation: slideUpNav 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
+}
+
+/* Global Transitions and Cursors */
+button, 
+a, 
+input[type="submit"], 
+input[type="button"],
+.clickable {
+  cursor: pointer;
+}
+
+[disabled] {
+  cursor: not-allowed !important;
+}
+
+.shadow-4xl {
+  box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.3);
+}
+
+/* ── SweetAlert2 Premium Overrides ─────────────────────────────────────── */
+@keyframes swalSlideIn {
+  from { transform: scale(0.85) translateY(20px); opacity: 0; }
+  to   { transform: scale(1)    translateY(0);     opacity: 1; }
+}
+@keyframes swalSlideOut {
+  from { transform: scale(1)    translateY(0);     opacity: 1; }
+  to   { transform: scale(0.85) translateY(20px); opacity: 0; }
+}
+
+.swal-show { animation: swalSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.swal-hide { animation: swalSlideOut 0.25s ease-in both; }
+
+.swal-popup-premium {
+  font-family: var(--font-display), sans-serif !important;
+}
+.swal-title {
+  font-size: 1.35rem !important;
+  letter-spacing: -0.02em;
+}
+.swal-confirm:focus,
+.swal-cancel:focus { outline: none !important; box-shadow: none !important; }
+
+/* Swal icon override — make it fit the premium look */
+.swal2-icon { border-width: 2px !important; margin-bottom: 1rem !important; }

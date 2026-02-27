@@ -340,15 +340,15 @@ const AddressPage = () => {
                                         Update Location
                                     </button>
                                     <button
-                                        onClick={() => {
-                                            showAlert({
-                                                title: 'Confirm Deletion',
-                                                text: 'Hub mapping will be permanently removed.',
-                                                icon: 'warning',
-                                                showCancelButton: true,
-                                                confirmButtonText: 'Remove',
-                                                confirmButtonColor: '#ef4444'
-                                            }).then(r => r.isConfirmed && deleteAddress(addr.id));
+                                        onClick={async () => {
+                                            const confirmed = await showAlert.danger({
+                                                title: 'Remove Hub?',
+                                                text: 'This logistical node will be permanently purged from your manifest.',
+                                                confirmButtonText: 'Yes, Remove Hub'
+                                            });
+                                            if (confirmed.isConfirmed) {
+                                                deleteAddress(addr.id);
+                                            }
                                         }}
                                         className="flex-1 flex items-center justify-center gap-3 py-6 hover:bg-gray-50 text-gray-400 hover:text-gray-900 transition-all text-[11px] font-black uppercase tracking-widest cursor-pointer group/btn"
                                     >

@@ -24,13 +24,59 @@ exports.getAnalytics = asyncHandler(async (req, res, next) => {
         }
     ]);
 
+    // Graph Data: Last 7 days Sales & New Users
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const dailySales = await Order.aggregate([
+        { $match: { createdAt: { $gte: sevenDaysAgo }, isPaid: true } },
+        {
+            $group: {
+                _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                revenue: { $sum: "$totalPrice" },
+                orders: { $sum: 1 }
+            }
+        },
+        { $sort: { "_id": 1 } }
+    ]);
+
+    const dailyUsers = await User.aggregate([
+        { $match: { createdAt: { $gte: sevenDaysAgo } } },
+        {
+            $group: {
+                _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                count: { $sum: 1 }
+            }
+        },
+        { $sort: { "_id": 1 } }
+    ]);
+
+    // Format for frontend (merged by date)
+    const graphData = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+
+        const sale = dailySales.find(s => s._id === dateStr) || { revenue: 0, orders: 0 };
+        const user = dailyUsers.find(u => u._id === dateStr) || { count: 0 };
+
+        graphData.push({
+            date: dateStr,
+            revenue: sale.revenue,
+            orders: sale.orders,
+            users: user.count
+        });
+    }
+
     res.status(200).json({
         success: true,
         data: {
             users: totalUsers,
             products: totalProducts,
             orders: totalOrders,
-            revenue: revenueData.length > 0 ? revenueData[0].totalRevenue : 0
+            revenue: revenueData.length > 0 ? revenueData[0].totalRevenue : 0,
+            graphData
         }
     });
 });
@@ -66,8 +112,14 @@ exports.getAllOrders = asyncHandler(async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 20;
     const skip = (page - 1) * limit;
 
-    const total = await Order.countDocuments();
-    const orders = await Order.find()
+    const { status } = req.query;
+    const query = {};
+    if (status && status !== 'All') {
+        query.status = status;
+    }
+
+    const total = await Order.countDocuments(query);
+    const orders = await Order.find(query)
         .populate('user', 'name email')
         .sort('-createdAt')
         .skip(skip)

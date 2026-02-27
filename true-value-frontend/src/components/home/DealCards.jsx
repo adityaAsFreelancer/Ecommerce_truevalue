@@ -3,11 +3,11 @@ import { Plus, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const deals = [
-    { id: 1, name: 'Fresh Avocados', price: '$4.99', oldPrice: '$6.99', image: 'https://images.unsplash.com/photo-1523049673856-42868ac14b79?auto=format&fit=crop&q=80&w=300', rating: 4.8 },
-    { id: 2, name: 'Organic Bananas', price: '$2.49', oldPrice: '', image: 'https://images.unsplash.com/photo-1603833665858-e61d17a86224?auto=format&fit=crop&q=80&w=300', rating: 4.9 },
-    { id: 3, name: 'Red Apples', price: '$3.99', oldPrice: '$5.49', image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&q=80&w=300', rating: 4.7 },
-    { id: 4, name: 'Fresh Broccoli', price: '$1.99', oldPrice: '', image: 'https://images.unsplash.com/photo-1459411621453-7edd0c42711c?auto=format&fit=crop&q=80&w=300', rating: 4.6 },
-    { id: 5, name: 'Sweet Oranges', price: '$5.99', oldPrice: '$7.99', image: 'https://images.unsplash.com/photo-1547514701-42782101795e?auto=format&fit=crop&q=80&w=300', rating: 4.9 },
+    { id: 1, name: 'Fresh Avocados', price: '₹4.99', oldPrice: '₹6.99', image: 'https://images.unsplash.com/photo-1523049673856-42868ac14b79?auto=format&fit=crop&q=80&w=300', rating: 4.8 },
+    { id: 2, name: 'Organic Bananas', price: '₹2.49', oldPrice: '', image: 'https://images.unsplash.com/photo-1603833665858-e61d17a86224?auto=format&fit=crop&q=80&w=300', rating: 4.9 },
+    { id: 3, name: 'Red Apples', price: '₹3.99', oldPrice: '₹5.49', image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&q=80&w=300', rating: 4.7 },
+    { id: 4, name: 'Fresh Broccoli', price: '₹1.99', oldPrice: '', image: 'https://images.unsplash.com/photo-1459411621453-7edd0c42711c?auto=format&fit=crop&q=80&w=300', rating: 4.6 },
+    { id: 5, name: 'Sweet Oranges', price: '₹5.99', oldPrice: '₹7.99', image: 'https://images.unsplash.com/photo-1547514701-42782101795e?auto=format&fit=crop&q=80&w=300', rating: 4.9 },
 ];
 
 const DealCards = () => {

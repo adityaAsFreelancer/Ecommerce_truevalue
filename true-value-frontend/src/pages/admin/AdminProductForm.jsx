@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import {
     Save, X, Upload, Plus, Trash2,
     Image as ImageIcon, ChevronLeft, Info,
-    DollarSign, Package, Tag, Layers, CheckCircle2, Loader2
+    DollarSign, Package, Tag, Layers, CheckCircle2
 } from 'lucide-react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import showAlert from '../../utils/swal';
 import { useUser } from '../../context/UserContext';
+import { PageSpinner, MiniSpinner } from '../../components/common/Loaders';
+import { api } from '../../utils/api';
 
 const AdminProductForm = () => {
     const { id } = useParams();
@@ -66,7 +68,7 @@ const AdminProductForm = () => {
                 }
             } catch (error) {
                 console.error('Fetch Error:', error);
-                showAlert({ title: 'Error', text: 'Failed to load asset data.', icon: 'error' });
+                showAlert.error({ title: 'Error', text: 'Failed to load asset data.' });
             } finally {
                 setLoading(false);
             }
@@ -118,13 +120,14 @@ const AdminProductForm = () => {
                 // Upload failed — remove pending previews
                 setPendingPreviews(prev => prev.filter(u => !blobUrls.includes(u)));
                 blobUrls.forEach(u => URL.revokeObjectURL(u));
-                showAlert({ title: 'Upload Failed', text: data.message || 'Could not upload images.', icon: 'error' });
+                showAlert.error({ title: 'Upload Failed', text: data.message || 'Could not upload images.' });
+                return;
             }
         } catch (error) {
             console.error('Upload Error:', error);
             setPendingPreviews(prev => prev.filter(u => !blobUrls.includes(u)));
             blobUrls.forEach(u => URL.revokeObjectURL(u));
-            showAlert({ title: 'Upload Failed', text: 'Could not upload images. Please try again.', icon: 'error' });
+            showAlert.error({ title: 'Upload Failed', text: 'Could not upload images. Please try again.' });
         } finally {
             setUploading(false);
         }
@@ -157,26 +160,20 @@ const AdminProductForm = () => {
                 })
             });
 
-            showAlert({
+            showAlert.success({
                 title: isEditMode ? 'Product Updated' : 'Product Created',
-                text: `"${formData.name}" has been ${isEditMode ? 'updated' : 'added'} successfully.`,
-                icon: 'success'
+                text: `"${formData.name}" has been ${isEditMode ? 'updated' : 'added'} successfully.`
             });
             navigate('/admin/products');
         } catch (error) {
             console.error('Submit Error:', error);
-            showAlert({ title: 'Save Failed', text: 'Could not save product. Please try again.', icon: 'error' });
+            showAlert.error({ title: 'Save Failed', text: 'Could not save product. Please try again.' });
         } finally {
             setSubmitting(false);
         }
     };
 
-    if (loading) return (
-        <div className="flex items-center justify-center p-20 flex-col gap-6">
-            <div className="animate-spin size-12 border-[6px] border-primary/20 border-t-primary rounded-full" />
-            <p className="font-black text-gray-400 uppercase tracking-widest text-xs italic">Loading Product...</p>
-        </div>
-    );
+    if (loading) return <PageSpinner message="Deciphering Asset Data..." />;
 
     return (
         <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
@@ -206,7 +203,7 @@ const AdminProductForm = () => {
                         disabled={submitting}
                         className="flex items-center gap-3 px-10 py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all text-xs uppercase tracking-widest disabled:opacity-50"
                     >
-                        {submitting ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                        {submitting ? <MiniSpinner color="white" /> : <Save size={18} />}
                         {isEditMode ? 'Update Product' : 'Save Product'}
                     </button>
                 </div>
@@ -322,16 +319,16 @@ const AdminProductForm = () => {
                             ))}
                             {/* Pending previews (blob URLs — uploading) */}
                             {pendingPreviews.map((blobUrl, idx) => (
-                                <div key={`pending-${idx}`} className="relative aspect-square bg-gray-50 rounded-2xl border-2 border-primary/30 overflow-hidden">
-                                    <img src={blobUrl} alt="Uploading..." className="w-full h-full object-cover opacity-60" />
-                                    <div className="absolute inset-0 flex items-center justify-center bg-white/40">
-                                        <Loader2 className="animate-spin text-primary" size={24} />
+                                <div key={`pending-${idx}`} className="relative aspect-square bg-gray-50 rounded-2xl border-2 border-primary/30 overflow-hidden flex items-center justify-center">
+                                    <img src={blobUrl} alt="Uploading..." className="w-full h-full object-cover opacity-60 absolute inset-0" />
+                                    <div className="relative z-10">
+                                        <MiniSpinner size={32} color="#5EC401" />
                                     </div>
                                 </div>
                             ))}
                             <label className="aspect-square border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all group overflow-hidden relative">
                                 {uploading ? (
-                                    <Loader2 className="animate-spin text-primary" size={32} />
+                                    <MiniSpinner size={32} color="#5EC401" />
                                 ) : (
                                     <>
                                         <Upload className="text-gray-300 group-hover:text-primary transition-colors" size={32} />

@@ -1,7 +1,9 @@
 import React from 'react';
 import { Star, Verified } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const ProductDetailsInfo = ({ product }) => {
+    const { t } = useLanguage();
     return (
         <div className="space-y-6" data-aos="fade-left">
             <div>
@@ -38,13 +40,13 @@ const ProductDetailsInfo = ({ product }) => {
 
             <div className="space-y-4">
                 <div className="flex items-baseline gap-3">
-                    <span className="text-4xl font-black text-gray-900 font-display">${product.price.toFixed(2)}</span>
+                    <span className="text-4xl font-black text-gray-900 font-display">{t('common', 'currency')}{product.price.toFixed(2)}</span>
                     {product.oldPrice && (
-                        <span className="text-xl text-gray-400 line-through font-medium">${product.oldPrice.toFixed(2)}</span>
+                        <span className="text-xl text-gray-400 line-through font-medium">{t('common', 'currency')}{product.oldPrice.toFixed(2)}</span>
                     )}
                     {product.oldPrice && (
                         <span className="bg-green-100 text-green-700 font-black text-xs px-3 py-1.5 rounded-full uppercase tracking-wider">
-                            Save ${(product.oldPrice - product.price).toFixed(2)}
+                            Save {t('common', 'currency')}{(product.oldPrice - product.price).toFixed(2)}
                         </span>
                     )}
                 </div>

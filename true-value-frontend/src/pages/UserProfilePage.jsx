@@ -11,6 +11,7 @@ import showAlert from '../utils/swal';
 import { useNavigate, Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { useLanguage } from '../context/LanguageContext';
+import { MiniSpinner } from '../components/common/Loaders';
 
 const UserProfilePage = () => {
     const { user, logout, orders, updateUser, uploadAvatar } = useUser();
@@ -137,13 +138,10 @@ const UserProfilePage = () => {
     };
 
     const handleLogout = async () => {
-        const result = await showAlert({
+        const result = await showAlert.danger({
             title: 'Logout',
-            text: 'Are you sure you want to logout?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Logout',
-            cancelButtonText: 'Cancel'
+            text: 'Are you sure you want to terminate your secure session?',
+            confirmButtonText: 'Yes, Logout'
         });
 
         if (result.isConfirmed) {
@@ -177,11 +175,13 @@ const UserProfilePage = () => {
                                 />
                                 <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
                                     <div
-                                        className={`size-28 rounded-full bg-cover bg-center border-4 border-white shadow-xl group-hover:scale-105 transition-transform duration-500 bg-gray-100 ${uploading ? 'opacity-50 grayscale' : ''}`}
-                                        style={{ backgroundImage: `url(${user?.avatar ? (user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000${user.avatar}`) : 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'})` }}
-                                    />
-                                    <div className="absolute bottom-1 right-1 p-2.5 bg-primary text-white rounded-full border-4 border-white shadow-lg">
-                                        <Camera size={14} className={uploading ? 'animate-pulse' : ''} />
+                                        className={`size-28 rounded-full bg-cover bg-center border-4 border-white shadow-xl group-hover:scale-105 transition-transform duration-500 bg-gray-100 flex items-center justify-center relative overflow-hidden ${uploading ? 'opacity-50' : ''}`}
+                                        style={{ backgroundImage: uploading ? 'none' : `url(${user?.avatar ? (user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000${user.avatar}`) : 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'})` }}
+                                    >
+                                        {uploading && <MiniSpinner size="h-8 w-8" color="text-primary" />}
+                                    </div>
+                                    <div className="absolute bottom-1 right-1 p-2.5 bg-primary text-white rounded-full border-4 border-white shadow-lg z-10">
+                                        <Camera size={14} />
                                     </div>
                                 </div>
                                 <div className="text-center space-y-1">

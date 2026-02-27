@@ -1,27 +1,19 @@
-const { AppDataSource } = require('../config/database');
+const Coupon = require('../models/Coupon');
 const asyncHandler = require('../middleware/asyncHandler');
 const ErrorResponse = require('../utils/errorHandler');
-
-// Helper to get repositories
-const getCouponRepo = () => AppDataSource.getRepository('Coupon');
 
 // @desc    Validate and Apply Coupon
 // @route   POST /api/marketing/coupons/validate
 // @access  Private
 exports.validateCoupon = asyncHandler(async (req, res, next) => {
-    const { code, orderItems, subtotal } = req.body;
-    const couponRepo = getCouponRepo();
+    const { code, subtotal } = req.body;
 
-    const coupon = await couponRepo.findOne({
-        where: { code, isActive: true },
-        relations: ['vendor']
-    });
+    const coupon = await Coupon.findOne({ code: code.toUpperCase(), isActive: true });
 
     if (!coupon) {
-        return next(new ErrorResponse('Invalid coupon code', 404));
+        return next(new ErrorResponse('Invalid or inactive coupon code', 404));
     }
 
-    // Check validity logic
     const now = new Date();
     if (now > coupon.expiryDate) {
         return next(new ErrorResponse('Coupon has expired', 400));
@@ -31,65 +23,64 @@ exports.validateCoupon = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Coupon usage limit reached', 400));
     }
 
-    // Check minimum order value
-    if (parseFloat(subtotal) < parseFloat(coupon.minOrderValue)) {
-        return next(new ErrorResponse(`Minimum order value of ₹${coupon.minOrderValue} required for this coupon`, 400));
-    }
-
-    // Check if coupon is vendor-specific
-    if (coupon.vendorId) {
-        const vendorItems = orderItems.filter(item => {
-            // Check if item.vendor matches coupon.vendorId
-            // item.vendor might be an ID string or object depending on frontend payload
-            // Assuming item.vendor is ID
-            return (item.vendor === coupon.vendorId || item.vendorId === coupon.vendorId);
-        });
-
-        if (vendorItems.length === 0) {
-            return next(new ErrorResponse('This coupon is only valid for specific vendor products', 400));
-        }
+    if (parseFloat(subtotal) < coupon.minOrderValue) {
+        return next(new ErrorResponse(`Minimum order value of ₹${coupon.minOrderValue} required`, 400));
     }
 
     // Calculate discount
-    let discount = 0;
-    const orderSubtotal = parseFloat(subtotal);
-    const discountVal = parseFloat(coupon.discountValue);
-
+    let discountAmount = 0;
     if (coupon.discountType === 'percentage') {
-        discount = (orderSubtotal * discountVal) / 100;
-        if (coupon.maxDiscount) {
-            const maxDisc = parseFloat(coupon.maxDiscount);
-            if (discount > maxDisc) {
-                discount = maxDisc;
-            }
+        discountAmount = (subtotal * coupon.discountValue) / 100;
+        if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
+            discountAmount = coupon.maxDiscount;
         }
     } else {
-        discount = discountVal;
+        discountAmount = coupon.discountValue;
     }
 
     res.status(200).json({
         success: true,
         data: {
             code: coupon.code,
+            description: coupon.description, // Added description field
             discountType: coupon.discountType,
             discountValue: coupon.discountValue,
-            discountAmount: discount
+            discountAmount: Number(discountAmount.toFixed(2))
         }
     });
 });
 
-// @desc    Create a Coupon (Admin/Vendor)
+// @desc    Get active coupons for users
+// @route   GET /api/marketing/active
+// @access  Private
+exports.getActiveCoupons = asyncHandler(async (req, res, next) => {
+    // Current date at midnight for inclusive comparison
+    const now = new Date();
+    const startOfToday = new Date(now.setHours(0, 0, 0, 0));
+
+    // Find coupons that are active, not expired, and haven't reached usage limit
+    const coupons = await Coupon.find({
+        isActive: true,
+        expiryDate: { $gte: startOfToday },
+        $or: [
+            { usageLimit: null },
+            { usageLimit: { $exists: false } },
+            { $expr: { $lt: ["$usedCount", "$usageLimit"] } }
+        ]
+    }).select('code discountType discountValue minOrderValue maxDiscount description usageLimit usedCount');
+
+    res.status(200).json({
+        success: true,
+        count: coupons.length,
+        data: coupons
+    });
+});
+
+// @desc    Create a Coupon (Admin)
 // @route   POST /api/marketing/coupons
-// @access  Private (Admin/Vendor)
+// @access  Private (Admin)
 exports.createCoupon = asyncHandler(async (req, res, next) => {
-    const couponRepo = getCouponRepo();
-
-    if (req.user.role === 'vendor') {
-        req.body.vendorId = req.user.vendorId;
-    }
-
-    const coupon = couponRepo.create(req.body);
-    await couponRepo.save(coupon);
+    const coupon = await Coupon.create(req.body);
 
     res.status(201).json({
         success: true,
@@ -99,25 +90,48 @@ exports.createCoupon = asyncHandler(async (req, res, next) => {
 
 // @desc    Get all coupons
 // @route   GET /api/marketing/coupons
-// @access  Private (Admin/Vendor)
+// @access  Private (Admin)
 exports.getCoupons = asyncHandler(async (req, res, next) => {
-    const couponRepo = getCouponRepo();
-    let where = {};
-
-    if (req.user.role === 'admin') {
-        where = {};
-    } else {
-        where = { vendorId: req.user.vendorId };
-    }
-
-    const coupons = await couponRepo.find({
-        where,
-        order: { createdAt: 'DESC' }
-    });
+    const coupons = await Coupon.find().sort('-createdAt');
 
     res.status(200).json({
         success: true,
         count: coupons.length,
         data: coupons
+    });
+});
+
+// @desc    Toggle Coupon Active Status
+// @route   PUT /api/marketing/coupons/:id/toggle
+// @access  Private (Admin)
+exports.toggleCoupon = asyncHandler(async (req, res, next) => {
+    const coupon = await Coupon.findById(req.params.id);
+
+    if (!coupon) {
+        return next(new ErrorResponse('Coupon not found', 404));
+    }
+
+    coupon.isActive = !coupon.isActive;
+    await coupon.save();
+
+    res.status(200).json({
+        success: true,
+        data: coupon
+    });
+});
+
+// @desc    Delete Coupon
+// @route   DELETE /api/marketing/coupons/:id
+// @access  Private (Admin)
+exports.deleteCoupon = asyncHandler(async (req, res, next) => {
+    const coupon = await Coupon.findByIdAndDelete(req.params.id);
+
+    if (!coupon) {
+        return next(new ErrorResponse('Coupon not found', 404));
+    }
+
+    res.status(200).json({
+        success: true,
+        message: 'Coupon deleted successfully'
     });
 });

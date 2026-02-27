@@ -1,12 +1,8 @@
-const { AppDataSource } = require('../config/database');
+const Order = require('../models/Order');
 const logisticsService = require('../utils/logisticsService');
 const asyncHandler = require('../middleware/asyncHandler');
 const ErrorResponse = require('../utils/errorHandler');
 const { sendEmail, getShippingUpdateTemplate } = require('../utils/emailService');
-
-// Helper to get repositories
-const getOrderRepo = () => AppDataSource.getRepository('Order');
-const getTimelineRepo = () => AppDataSource.getRepository('OrderTimeline');
 
 // @desc    Handle Shiprocket Webhook (Tracking Updates)
 // @route   POST /api/logistics/webhook
@@ -19,16 +15,14 @@ exports.handleLogisticsWebhook = asyncHandler(async (req, res, next) => {
     }
 
     const { awb, current_status, current_status_id, order_id } = req.body;
-    const orderRepo = getOrderRepo();
 
     // Find order by Shiprocket order_id or AWB
-    const order = await orderRepo.findOne({
-        where: [
-            { shiprocketOrderId: order_id },
+    const order = await Order.findOne({
+        $or: [
+            { shiprocketOrderId: order_id?.toString() },
             { awbCode: awb }
-        ],
-        relations: ['user', 'timeline']
-    });
+        ]
+    }).populate('user');
 
     if (order) {
         // Map Shiprocket status to Internal Status
@@ -44,12 +38,19 @@ exports.handleLogisticsWebhook = asyncHandler(async (req, res, next) => {
 
         order.status = internalStatus;
 
+        // Add to timeline
+        order.timeline.push({
+            status: internalStatus,
+            description: `Courier status update: ${current_status}`,
+            timestamp: new Date()
+        });
+
         // Send Email if Shipped
         if (internalStatus === 'Shipped') {
             try {
                 await sendEmail({
-                    email: order.user ? order.user.email : order.email,
-                    subject: `Your Order #${order.id} has been Shipped!`,
+                    email: order.user ? order.user.email : order.shippingAddress?.email,
+                    subject: `Your Order #${order._id} has been Shipped!`,
                     html: getShippingUpdateTemplate(order)
                 });
             } catch (emailErr) {
@@ -57,17 +58,7 @@ exports.handleLogisticsWebhook = asyncHandler(async (req, res, next) => {
             }
         }
 
-        await AppDataSource.manager.transaction(async (manager) => {
-            await manager.save(order);
-
-            // Add to timeline
-            const timelineEntry = manager.create('OrderTimeline', {
-                orderId: order.id,
-                status: internalStatus,
-                description: `Courier status update: ${current_status}`
-            });
-            await manager.save(timelineEntry);
-        });
+        await order.save();
     }
 
     res.status(200).json({ success: true });
@@ -77,13 +68,7 @@ exports.handleLogisticsWebhook = asyncHandler(async (req, res, next) => {
 // @route   POST /api/logistics/ship/:orderId
 // @access  Private (Admin)
 exports.createShipmentManually = asyncHandler(async (req, res, next) => {
-    const orderRepo = getOrderRepo();
-    const orderId = parseInt(req.params.orderId);
-
-    const order = await orderRepo.findOne({
-        where: { id: orderId },
-        relations: ['user', 'orderItems', 'orderItems.product']
-    });
+    const order = await Order.findById(req.params.orderId).populate('user');
 
     if (!order) {
         return next(new ErrorResponse('Order not found', 404));
@@ -91,78 +76,71 @@ exports.createShipmentManually = asyncHandler(async (req, res, next) => {
 
     // Logic to prepare Shiprocket Payload
     const shiprocketPayload = {
-        order_id: order.id,
+        order_id: order._id,
         order_date: order.createdAt,
-        pickup_location: "Primary", // Should be vendor address in future
-        billing_customer_name: order.name,
+        pickup_location: "Primary",
+        billing_customer_name: order.user?.name || "Customer",
         billing_last_name: "",
-        billing_address: order.address,
-        billing_city: order.city,
-        billing_pincode: order.postalCode,
-        billing_state: order.state,
-        billing_country: order.country,
-        billing_email: order.email,
-        billing_phone: order.phone,
+        billing_address: order.shippingAddress.address,
+        billing_city: order.shippingAddress.city,
+        billing_pincode: order.shippingAddress.postalCode,
+        billing_state: order.shippingAddress.state,
+        billing_country: order.shippingAddress.country,
+        billing_email: order.user?.email,
+        billing_phone: order.user?.phone || "",
         shipping_is_billing: true,
         order_items: order.orderItems.map(item => ({
             name: item.name,
-            sku: item.product ? item.product.id.toString() : 'UNKNOWN',
+            sku: item.product ? item.product.toString() : 'UNKNOWN',
             units: item.qty,
             selling_price: parseFloat(item.price)
         })),
         payment_method: "Prepaid",
         sub_total: parseFloat(order.totalPrice),
-        length: parseFloat(order.length || 0.5),
-        width: parseFloat(order.width || 0.5),
-        height: parseFloat(order.height || 0.5),
-        weight: parseFloat(order.weight || 0.5)
+        length: 0.5,
+        width: 0.5,
+        height: 0.5,
+        weight: 0.5
     };
 
-    const shiprocketOrder = await logisticsService.createOrder(shiprocketPayload);
+    try {
+        const shiprocketOrder = await logisticsService.createOrder(shiprocketPayload);
+        const awbData = await logisticsService.generateAWB(shiprocketOrder.shipment_id);
 
-    // Assign AWB
-    const awbData = await logisticsService.generateAWB(shiprocketOrder.shipment_id);
+        // Update order with logistics info
+        order.shipmentId = shiprocketOrder.shipment_id;
+        order.shiprocketOrderId = shiprocketOrder.order_id;
+        order.awbCode = awbData.awb_assign_status?.body?.awb_code || "";
+        order.courierName = awbData.awb_assign_status?.body?.courier_name || "";
+        order.status = 'Shipped';
 
-    // Update order with logistics info
-    order.shipmentId = shiprocketOrder.shipment_id;
-    order.shiprocketOrderId = shiprocketOrder.order_id;
-    order.awbCode = awbData.awb_assign_status?.body?.awb_code || "";
-    order.courierName = awbData.awb_assign_status?.body?.courier_name || "";
-    order.status = 'Shipped';
-
-    await AppDataSource.manager.transaction(async (manager) => {
-        await manager.save(order);
-
-        const timelineEntry = manager.create('OrderTimeline', {
-            orderId: order.id,
+        order.timeline.push({
             status: 'Shipped',
-            description: 'Shipment created and AWB assigned via automation.'
+            description: 'Shipment created and AWB assigned via automation.',
+            timestamp: new Date()
         });
-        await manager.save(timelineEntry);
-    });
 
-    res.status(200).json({
-        success: true,
-        data: {
-            shipmentId: order.shipmentId,
-            orderId: order.shiprocketOrderId,
-            awbCode: order.awbCode,
-            courierName: order.courierName
-        }
-    });
+        await order.save();
+
+        res.status(200).json({
+            success: true,
+            data: {
+                shipmentId: order.shipmentId,
+                orderId: order.shiprocketOrderId,
+                awbCode: order.awbCode,
+                courierName: order.courierName
+            }
+        });
+    } catch (err) {
+        return next(new ErrorResponse(`Shiprocket Integration Error: ${err.message}`, 500));
+    }
 });
 
 // @desc    Get Order Status/Tracking Data
 // @route   GET /api/logistics/status/:orderId
 // @access  Public (for tracking search)
 exports.getOrderStatus = asyncHandler(async (req, res, next) => {
-    const orderRepo = getOrderRepo();
-    const orderId = parseInt(req.params.orderId);
-
-    const order = await orderRepo.findOne({
-        where: { id: orderId },
-        relations: ['timeline', 'orderItems']
-    });
+    const order = await Order.findById(req.params.orderId);
 
     if (!order) {
         return next(new ErrorResponse('Order not found', 404));
@@ -171,16 +149,10 @@ exports.getOrderStatus = asyncHandler(async (req, res, next) => {
     res.status(200).json({
         success: true,
         data: {
-            _id: order.id,
+            _id: order._id,
             status: order.status,
             timeline: order.timeline,
-            shippingAddress: {
-                address: order.address,
-                city: order.city,
-                state: order.state,
-                postalCode: order.postalCode,
-                country: order.country
-            },
+            shippingAddress: order.shippingAddress,
             orderItems: order.orderItems,
             logistics: {
                 shipmentId: order.shipmentId,
@@ -196,10 +168,8 @@ exports.getOrderStatus = asyncHandler(async (req, res, next) => {
 // @access  Private
 exports.requestReturn = asyncHandler(async (req, res, next) => {
     const { orderId, reason } = req.body;
-    const orderRepo = getOrderRepo();
-    const cleanOrderId = parseInt(orderId);
 
-    const order = await orderRepo.findOne({ where: { id: cleanOrderId } });
+    const order = await Order.findById(orderId);
 
     if (!order) {
         return next(new ErrorResponse('Order not found', 404));
@@ -210,17 +180,13 @@ exports.requestReturn = asyncHandler(async (req, res, next) => {
     }
 
     order.status = 'Return Requested';
-
-    await AppDataSource.manager.transaction(async (manager) => {
-        await manager.save(order);
-
-        const timelineEntry = manager.create('OrderTimeline', {
-            orderId: order.id,
-            status: 'Return Requested',
-            description: `Customer initiated return. Reason: ${reason}`
-        });
-        await manager.save(timelineEntry);
+    order.timeline.push({
+        status: 'Return Requested',
+        description: `Customer initiated return. Reason: ${reason}`,
+        timestamp: new Date()
     });
+
+    await order.save();
 
     res.status(200).json({
         success: true,

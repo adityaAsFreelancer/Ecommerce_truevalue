@@ -6,6 +6,7 @@ import {
 import showAlert from '../../utils/swal';
 import { useUser } from '../../context/UserContext';
 import { api } from '../../utils/api';
+import { TableSkeleton } from '../../components/common/Loaders';
 
 const AdminUserList = () => {
     const [users, setUsers] = useState([]);
@@ -33,7 +34,7 @@ const AdminUserList = () => {
             setUsers(all);
         } catch (error) {
             console.error('Fetch Users Error:', error);
-            showAlert({ title: 'Error', text: 'Failed to load users.', icon: 'error' });
+            showAlert.error({ title: 'Error', text: 'Failed to load users.' });
         } finally {
             setLoading(false);
         }
@@ -123,7 +124,7 @@ const AdminUserList = () => {
                         currentAvatar = uploadedUrl;
                         preview.src = uploadedUrl;
                     } catch (err) {
-                        showAlert({ title: 'Upload Failed', text: 'Could not upload profile picture.', icon: 'error' });
+                        showAlert.error({ title: 'Upload Failed', text: 'Could not upload profile picture.' });
                     } finally {
                         preview.style.opacity = '1';
                     }
@@ -146,10 +147,10 @@ const AdminUserList = () => {
                         method: 'PUT',
                         body: JSON.stringify(result.value)
                     });
-                    showAlert({ title: 'Updated', text: `${result.value.name} has been updated.`, icon: 'success' });
+                    showAlert.success({ title: 'Updated', text: `${result.value.name} has been updated.` });
                     fetchUsers();
                 } catch (err) {
-                    showAlert({ title: 'Error', text: err.message || 'Could not update user.', icon: 'error' });
+                    showAlert.error({ title: 'Error', text: err.message || 'Could not update user.' });
                 }
             }
         });
@@ -162,8 +163,7 @@ const AdminUserList = () => {
             title: `${action} "${user.name}"?`,
             text: user.isBlocked
                 ? 'This user will regain access to the platform.'
-                : 'This user will not be able to log in.',
-            icon: 'warning'
+                : 'This user will not be able to log in.'
         });
         if (!confirmed) return;
 
@@ -172,32 +172,31 @@ const AdminUserList = () => {
                 method: 'PUT',
                 body: JSON.stringify({ isBlocked: !user.isBlocked })
             });
-            showAlert({
+            showAlert.success({
                 title: user.isBlocked ? 'User Unblocked' : 'User Blocked',
-                text: `${user.name} has been ${user.isBlocked ? 'unblocked' : 'blocked'}.`,
-                icon: 'success'
+                text: `${user.name} has been ${user.isBlocked ? 'unblocked' : 'blocked'}.`
             });
             fetchUsers();
         } catch (err) {
-            showAlert({ title: 'Error', text: err.message || 'Could not update user status.', icon: 'error' });
+            showAlert.error({ title: 'Error', text: err.message || 'Could not update user status.' });
         }
     };
 
     // ── Delete ───────────────────────────────────────────────────
     const handleDelete = async (user) => {
-        const confirmed = await showAlert.confirm({
+        const confirmed = await showAlert.danger({
             title: `Delete "${user.name}"?`,
             text: 'This action is permanent and cannot be undone.',
-            icon: 'warning'
+            confirmButtonText: 'Yes, Delete User'
         });
         if (!confirmed) return;
 
         try {
             await api(`/admin/users/${user._id}`, { method: 'DELETE' });
-            showAlert({ title: 'Deleted', text: `${user.name} has been removed.`, icon: 'success' });
+            showAlert.success({ title: 'Deleted', text: `${user.name} has been removed.` });
             fetchUsers();
         } catch (err) {
-            showAlert({ title: 'Error', text: err.message || 'Could not delete user.', icon: 'error' });
+            showAlert.error({ title: 'Error', text: err.message || 'Could not delete user.' });
         }
     };
 
@@ -260,7 +259,7 @@ const AdminUserList = () => {
                         currentAvatar = uploadedUrl;
                         preview.src = uploadedUrl;
                     } catch (err) {
-                        showAlert({ title: 'Upload Failed', text: 'Could not upload profile picture.', icon: 'error' });
+                        showAlert.error({ title: 'Upload Failed', text: 'Could not upload profile picture.' });
                     } finally {
                         preview.style.opacity = '1';
                     }
@@ -288,10 +287,10 @@ const AdminUserList = () => {
                         method: 'POST',
                         body: JSON.stringify(result.value)
                     });
-                    showAlert({ title: 'Member Registered', text: `${result.value.name} has been added.`, icon: 'success' });
+                    showAlert.success({ title: 'Member Registered', text: `${result.value.name} has been added.` });
                     fetchUsers();
                 } catch (err) {
-                    showAlert({ title: 'Error', text: err.message || 'Could not create user.', icon: 'error' });
+                    showAlert.error({ title: 'Error', text: err.message || 'Could not create user.' });
                 }
             }
         });
@@ -355,13 +354,7 @@ const AdminUserList = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {loading ? (
-                                Array(5).fill(0).map((_, i) => (
-                                    <tr key={i} className="animate-pulse">
-                                        <td colSpan="6" className="px-8 py-6">
-                                            <div className="h-10 bg-gray-100 rounded-xl w-full" />
-                                        </td>
-                                    </tr>
-                                ))
+                                <TableSkeleton rows={5} cols={6} />
                             ) : users.length === 0 ? (
                                 <tr>
                                     <td colSpan="6" className="px-8 py-20 text-center uppercase italic">

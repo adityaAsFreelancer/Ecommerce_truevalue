@@ -12,7 +12,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useUser } from '../context/UserContext';
 import { useParams, Link } from 'react-router-dom';
 import { useProducts } from '../context/ProductsContext';
-import { Loader2 } from 'lucide-react';
+import { PageSpinner } from '../components/common/Loaders';
 
 const ProductDetailsPage = () => {
     const { productId } = useParams();
@@ -35,9 +35,9 @@ const ProductDetailsPage = () => {
     }, [productId, getProductById]);
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-white flex-col gap-6">
-            <Loader2 className="animate-spin size-12 text-primary" />
-            <p className="font-black text-gray-400 uppercase tracking-[0.3em] text-[10px] italic">Syncing with Master Inventory...</p>
+        <div className="min-h-screen bg-white">
+            <HomeNavbar />
+            <PageSpinner message="Loading Product..." />
         </div>
     );
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Loader2 } from 'lucide-react';
+import { Box } from 'lucide-react';
 import HomeNavbar from '../components/home/HomeNavbar';
 import Breadcrumbs from '../components/products/Breadcrumbs';
 import ProductFilters from '../components/products/ProductFilters';
@@ -10,6 +10,7 @@ import QuickViewModal from '../components/products/QuickViewModal';
 import { useLanguage } from '../context/LanguageContext';
 import { useUser } from '../context/UserContext';
 import { useProducts } from '../context/ProductsContext';
+import { CardSkeleton } from '../components/common/Loaders';
 
 const ProductListingPage = () => {
     const {
@@ -18,7 +19,8 @@ const ProductListingPage = () => {
         searchQuery,
         activeCategory,
         handleSearch,
-        resetFilters: resetContextFilters
+        resetFilters: resetContextFilters,
+        refreshProducts: fetchProducts
     } = useProducts();
 
     const { t } = useLanguage();
@@ -47,9 +49,17 @@ const ProductListingPage = () => {
             ...prev,
             [key]: value
         }));
-        // Note: Full backend filter integration for all these fields would require backend updates.
-        // For now, we are connecting the ones supported by the API.
     };
+
+    // Refetch products when filters (brands, rating, priceRange) change
+    useEffect(() => {
+        const fetchParams = {
+            brands: filters.brands,
+            rating: filters.rating,
+            priceRange: filters.priceRange
+        };
+        fetchProducts(fetchParams);
+    }, [filters.brands, filters.rating, filters.priceRange, fetchProducts]);
 
     const resetFilters = () => {
         setFilters({
@@ -135,10 +145,7 @@ const ProductListingPage = () => {
                         </div>
 
                         {loading ? (
-                            <div className="flex flex-col items-center justify-center py-32">
-                                <Loader2 className="animate-spin text-primary size-12 mb-4" />
-                                <p className="text-gray-400 font-black uppercase tracking-widest text-xs italic">Syncing with Master Inventory...</p>
-                            </div>
+                            <CardSkeleton count={6} />
                         ) : products.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                                 {products.map((product) => (

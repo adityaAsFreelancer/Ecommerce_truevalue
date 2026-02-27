@@ -3,11 +3,13 @@ import { Home, Search, ShoppingCart, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useCart } from '../../context/CartContext';
+import { useUser } from '../../context/UserContext';
 
 const BottomNav = () => {
     const location = useLocation();
     const { t, language } = useLanguage();
-    const { cart } = useCart();
+    const { cart, openCart } = useCart();
+    const { unreadCount } = useUser();
 
     // Derived cart count
     const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
@@ -18,8 +20,6 @@ const BottomNav = () => {
         { path: '/cart-action', isCart: true, icon: ShoppingCart, label: t('nav', 'cart'), hi: 'झोला' },
         { path: '/profile', icon: User, label: t('nav', 'account'), hi: 'खाता' }
     ];
-
-    const { openCart } = useCart();
 
     return (
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-gray-100 flex items-center justify-around px-2 py-3 z-[100] shadow-[0_-8px_30px_rgb(0,0,0,0.04)] pb-8">
@@ -52,9 +52,14 @@ const BottomNav = () => {
                     <Link
                         key={item.path}
                         to={item.path}
-                        className={`flex flex-col items-center justify-center gap-1.5 min-w-[64px] transition-all ${isActive ? 'text-primary scale-110' : 'text-gray-400'}`}
+                        className={`flex flex-col items-center justify-center gap-1.5 min-w-[64px] transition-all relative ${isActive ? 'text-primary scale-110' : 'text-gray-400'}`}
                     >
-                        <item.icon size={22} className={isActive ? 'stroke-[2.5px]' : ''} />
+                        <div className="relative">
+                            <item.icon size={22} className={isActive ? 'stroke-[2.5px]' : ''} />
+                            {item.path === '/profile' && unreadCount > 0 && (
+                                <span className="absolute -top-1 -right-1 size-3 bg-red-500 rounded-full border-2 border-white animate-pulse" />
+                            )}
+                        </div>
                         <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-primary opacity-100' : 'text-gray-400 opacity-60'}`}>
                             {language === 'hi' ? item.hi : item.label}
                         </span>

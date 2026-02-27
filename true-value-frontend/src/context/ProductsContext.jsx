@@ -34,6 +34,17 @@ export const ProductsProvider = ({ children }) => {
             if (searchQuery) queryParams.set('search', searchQuery);
             if (activeCategory) queryParams.set('category', activeCategory);
 
+            // Add brand, rating, and price range filters if present in params
+            if (params.brands && params.brands.length > 0) {
+                queryParams.set('brand', params.brands.join(','));
+            }
+            if (params.rating) {
+                queryParams.set('rating[gte]', params.rating);
+            }
+            if (params.priceRange && params.priceRange < 10000) {
+                queryParams.set('price[lte]', params.priceRange);
+            }
+
             const response = await api(`/products?${queryParams.toString()}`);
 
             // Backend returns { success: true, count: X, pagination: {...}, data: [...] }
@@ -45,14 +56,15 @@ export const ProductsProvider = ({ children }) => {
                 id: p._id,
                 name: p.name,
                 description: p.description,
-                price: p.price,
+                price: p.salePrice || p.price,
+                oldPrice: p.salePrice ? p.price : null,
                 salePrice: p.salePrice,
                 category: p.category?.name || p.category, // Handle populated category
                 vendor: p.vendor,
                 images: p.images,
                 // Ensure img exists for components expecting it
                 img: p.images && p.images.length > 0 ? p.images[0] : 'https://via.placeholder.com/300',
-                stock: p.stock,
+                stock: p.stock || p.countInStock,
                 rating: p.rating || 0,
                 numReviews: p.numReviews || 0,
                 createdAt: p.createdAt
@@ -122,13 +134,14 @@ export const ProductsProvider = ({ children }) => {
                 id: p._id,
                 name: p.name,
                 description: p.description,
-                price: p.price,
+                price: p.salePrice || p.price,
+                oldPrice: p.salePrice ? p.price : null,
                 salePrice: p.salePrice,
                 category: p.category?.name || p.category,
                 vendor: p.vendor,
                 images: p.images,
                 img: p.images && p.images.length > 0 ? p.images[0] : 'https://via.placeholder.com/300',
-                stock: p.stock,
+                stock: p.stock || p.countInStock,
                 rating: p.rating || 0,
                 numReviews: p.numReviews || 0,
                 createdAt: p.createdAt

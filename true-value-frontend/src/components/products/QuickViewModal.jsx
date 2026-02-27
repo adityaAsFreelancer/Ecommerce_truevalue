@@ -126,9 +126,9 @@ const QuickViewModal = ({ product, isOpen, onClose, isWishlisted, onToggleWishli
                             <div className="space-y-6 mt-auto">
                                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
                                     <div className="flex flex-col">
-                                        <span className="text-3xl font-black text-gray-900">${product.price.toFixed(2)}</span>
+                                        <span className="text-3xl font-black text-gray-900">{t('common', 'currency')}{product.price.toFixed(2)}</span>
                                         {product.oldPrice && (
-                                            <span className="text-sm text-gray-400 line-through font-medium">${product.oldPrice.toFixed(2)}</span>
+                                            <span className="text-sm text-gray-400 line-through font-medium">{t('common', 'currency')}{product.oldPrice.toFixed(2)}</span>
                                         )}
                                     </div>
 

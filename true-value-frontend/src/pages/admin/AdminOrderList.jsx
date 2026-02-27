@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../utils/api';
 import showAlert from '../../utils/swal';
 import { useUser } from '../../context/UserContext';
+import { TableSkeleton } from '../../components/common/Loaders';
 
 const AdminOrderList = () => {
     const navigate = useNavigate();
@@ -26,7 +27,7 @@ const AdminOrderList = () => {
         }
         setLoading(true);
         try {
-            const response = await api(`/admin/orders?page=${page}&limit=10&search=${searchTerm}`);
+            const response = await api(`/admin/orders?page=${page}&limit=10&search=${searchTerm}&status=${statusFilter}`);
             setOrders(response.data);
             setPagination({
                 page: response.page || 1,
@@ -34,7 +35,7 @@ const AdminOrderList = () => {
             });
         } catch (error) {
             console.error('Fetch Orders Error:', error);
-            showAlert({ title: 'Error', text: 'Failed to retrieve logistics manifest.', icon: 'error' });
+            showAlert.error({ title: 'Error', text: 'Failed to retrieve logistics manifest.' });
         } finally {
             setLoading(false);
         }
@@ -51,10 +52,10 @@ const AdminOrderList = () => {
                 method: 'PUT',
                 body: JSON.stringify({ status: newStatus })
             });
-            showAlert({ title: 'Status Updated', text: `Order #${orderId} set to ${newStatus}.`, icon: 'success' });
+            showAlert.success({ title: 'Status Updated', text: `Order #${orderId} set to ${newStatus}.` });
             fetchOrders();
         } catch (error) {
-            showAlert({ title: 'Error', text: 'Protocol update failed.', icon: 'error' });
+            showAlert.error({ title: 'Error', text: 'Protocol update failed.' });
         }
     };
 
@@ -125,11 +126,7 @@ const AdminOrderList = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {loading ? (
-                                Array(5).fill(0).map((_, i) => (
-                                    <tr key={i} className="animate-pulse">
-                                        <td colSpan="5" className="px-8 py-8"><div className="h-10 bg-gray-100 rounded-xl w-full" /></td>
-                                    </tr>
-                                ))
+                                <TableSkeleton rows={5} cols={5} />
                             ) : orders.length === 0 ? (
                                 <tr>
                                     <td colSpan="5" className="px-8 py-20 text-center uppercase italic">

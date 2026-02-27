@@ -9,19 +9,29 @@ export const useUser = () => {
 };
 
 export const UserProvider = ({ children }) => {
-    // --- Auth State ---
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(localStorage.getItem('truevalue_token'));
     const [loading, setLoading] = useState(true);
-
-    // --- Addresses State ---
     const [addresses, setAddresses] = useState([]);
-
-    // --- Orders State ---
     const [orders, setOrders] = useState([]);
-
-    // --- Wishlist State ---
     const [wishlist, setWishlist] = useState([]);
+    const fetchMyOrders = async () => {
+        if (!token) return;
+        try {
+            const data = await api('/orders/myorders', { token });
+            const fetchedOrders = Array.isArray(data) ? data : (data.data || []);
+            const normalized = fetchedOrders.map(o => ({
+                ...o,
+                id: o._id || o.id,
+                items: o.orderItems || o.items || [],
+                total: o.totalPrice || o.total || 0,
+                date: o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : 'N/A'
+            }));
+            setOrders(normalized);
+        } catch (error) {
+            console.error('Failed to fetch orders:', error);
+        }
+    };
 
     // --- Fetch initial data if token exists ---
     useEffect(() => {
@@ -30,17 +40,12 @@ export const UserProvider = ({ children }) => {
                 try {
                     const response = await api('/auth/profile', { token });
                     const profileData = response.data || response;
-                    if (profileData.success) {
-                        setUser(profileData);
-                    } else {
-                        // If profileData.success is false or undefined, still set user if data exists
-                        setUser(profileData);
-                    }
+                    setUser(profileData);
                     setAddresses(profileData.addresses || []);
 
-                    // For now, load local orders/wishlist until backend is fully connected for them
-                    const savedOrders = localStorage.getItem('truevalue_orders');
-                    if (savedOrders) setOrders(JSON.parse(savedOrders));
+                    // Fetch real orders from backend
+                    await fetchMyOrders();
+
                     const savedWishlist = localStorage.getItem('truevalue_wishlist');
                     if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
                 } catch (error) {
@@ -50,13 +55,11 @@ export const UserProvider = ({ children }) => {
                     setLoading(false);
                 }
             } else {
-                setLoading(false); // Ensure loading is set to false even if no token
+                setLoading(false);
             }
         };
         loadProfile();
     }, [token]);
-
-    // --- Persistence Effects ---
     useEffect(() => {
         if (token) {
             localStorage.setItem('truevalue_token', token);
@@ -66,7 +69,6 @@ export const UserProvider = ({ children }) => {
     }, [token]);
 
     useEffect(() => { if (user) localStorage.setItem('truevalue_user', JSON.stringify(user)); else localStorage.removeItem('truevalue_user'); }, [user]);
-    useEffect(() => { localStorage.setItem('truevalue_orders', JSON.stringify(orders)); }, [orders]);
     useEffect(() => { localStorage.setItem('truevalue_wishlist', JSON.stringify(wishlist)); }, [wishlist]);
 
     // --- User Actions ---
@@ -173,7 +175,7 @@ export const UserProvider = ({ children }) => {
             const updatedProfile = response.data || response;
             setAddresses(updatedProfile.addresses || []);
         } catch (error) {
-            showAlert({ title: "Error", text: error.message, icon: "error" });
+            showAlert.error({ title: "Error", text: error.message });
         }
     };
 
@@ -188,14 +190,14 @@ export const UserProvider = ({ children }) => {
             const updatedProfile = response.data || response;
             setAddresses(updatedProfile.addresses || []);
         } catch (error) {
-            showAlert({ title: "Error", text: error.message, icon: "error" });
+            showAlert.error({ title: "Error", text: error.message });
         }
     };
 
     const deleteAddress = async (addressId) => {
         const addressToDelete = addresses.find(addr => addr.id === addressId);
         if (addressToDelete?.isDefault && addresses.length > 1) {
-            showAlert({ title: "Cannot Delete", text: "Please set another address as default before deleting this one.", icon: "warning" });
+            showAlert.warning({ title: "Cannot Delete", text: "Please set another address as default before deleting this one." });
             return;
         }
         const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
@@ -208,7 +210,7 @@ export const UserProvider = ({ children }) => {
             const updatedProfile = response.data || response;
             setAddresses(updatedProfile.addresses || []);
         } catch (error) {
-            showAlert({ title: "Error", text: error.message, icon: "error" });
+            showAlert.error({ title: "Error", text: error.message });
         }
     };
 
@@ -223,7 +225,7 @@ export const UserProvider = ({ children }) => {
             const updatedProfile = response.data || response;
             setAddresses(updatedProfile.addresses || []);
         } catch (error) {
-            showAlert({ title: "Error", text: error.message, icon: "error" });
+            showAlert.error({ title: "Error", text: error.message });
         }
     };
 
@@ -232,15 +234,15 @@ export const UserProvider = ({ children }) => {
         const isInWishlist = wishlist.some(item => item.id === product.id);
         if (isInWishlist) {
             setWishlist(wishlist.filter(item => item.id !== product.id));
-            showAlert({ title: "Removed", text: `${product.name} removed from wishlist`, icon: "info" });
+            showAlert.info({ title: "Removed", text: `${product.name} removed from wishlist` });
         } else {
             setWishlist([...wishlist, product]);
-            showAlert({ title: "Added", text: `${product.name} added to wishlist`, icon: "success" });
+            showAlert.success({ title: "Added", text: `${product.name} added to wishlist` });
         }
     };
 
     // --- Order Actions ---
-    const placeOrderAction = async (cartItems, total, shippingAddress) => {
+    const placeOrderAction = async (cartItems, total, shippingAddress, discountAmount = 0, couponCode = null, paymentMethod = 'card') => {
         if (!user) throw new Error("User must be logged in to place an order.");
 
         const orderData = {
@@ -266,10 +268,10 @@ export const UserProvider = ({ children }) => {
                 state: shippingAddress.state,
                 country: shippingAddress.country || 'India'
             },
-            paymentMethod: 'card', // Default for now
+            paymentMethod,
             totalPrice: total,
-            shippingPrice: total > 500 ? 0 : 50,
-            taxPrice: total * 0.18
+            discountAmount,
+            couponCode
         };
 
         try {
@@ -285,15 +287,62 @@ export const UserProvider = ({ children }) => {
                 ...newOrder,
                 id: newOrder._id || newOrder.id,
                 items: newOrder.orderItems || [],
-                total: newOrder.totalPrice || total
+                total: newOrder.totalPrice, // Use backend calculated total
+                date: newOrder.createdAt ? new Date(newOrder.createdAt).toLocaleDateString('en-IN') : 'Today'
             };
 
-            setOrders(prev => [normalizedOrder, ...prev]);
+            // Re-fetch all orders from backend to stay in sync
+            await fetchMyOrders();
             return normalizedOrder;
         } catch (error) {
             throw error;
         }
     };
+
+    // --- Notifications State ---
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const fetchNotifications = async () => {
+        if (!token) return;
+        try {
+            const data = await api('/notifications', { token });
+            const notifs = data.data || [];
+            setNotifications(notifs);
+            setUnreadCount(notifs.filter(n => !n.isRead).length);
+        } catch (error) {
+            console.error('Failed to fetch notifications:', error);
+        }
+    };
+
+    const markNotificationAsRead = async (id) => {
+        try {
+            await api(`/notifications/${id}/read`, { method: 'PUT', token });
+            setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        } catch (error) {
+            console.error('Failed to mark notification as read:', error);
+        }
+    };
+
+    const clearAllNotifications = async () => {
+        try {
+            await api('/notifications', { method: 'DELETE', token });
+            setNotifications([]);
+            setUnreadCount(0);
+        } catch (error) {
+            console.error('Failed to clear notifications:', error);
+        }
+    };
+
+    // --- Polling for Notifications ---
+    useEffect(() => {
+        if (token) {
+            fetchNotifications();
+            const interval = setInterval(fetchNotifications, 30000); // 30 sec polling
+            return () => clearInterval(interval);
+        }
+    }, [token]);
 
     const isAuthenticated = !!user;
 
@@ -301,8 +350,9 @@ export const UserProvider = ({ children }) => {
         <UserContext.Provider value={{
             user, loading, login, logout, registerUser, updateUser, isAuthenticated,
             addresses, addAddress, updateAddress, deleteAddress, setDefaultAddress,
-            orders, placeOrder: placeOrderAction,
-            wishlist, toggleWishlist
+            orders, placeOrder: placeOrderAction, fetchMyOrders,
+            wishlist, toggleWishlist,
+            notifications, unreadCount, markNotificationAsRead, clearAllNotifications, fetchNotifications
         }}>
             {children}
         </UserContext.Provider>

@@ -2,8 +2,11 @@ const express = require('express');
 const router = express.Router();
 const {
     validateCoupon,
+    getActiveCoupons,
     createCoupon,
-    getCoupons
+    getCoupons,
+    toggleCoupon,
+    deleteCoupon
 } = require('../controllers/couponController');
 const {
     getFlashSales,
@@ -15,7 +18,13 @@ const { authorize } = require('../middleware/roleMiddleware');
 router.get('/flash-sales', getFlashSales);
 router.get('/deals', getDailyDeals);
 router.post('/validate', protect, validateCoupon);
-router.post('/', protect, authorize('admin', 'vendor'), createCoupon);
-router.get('/', protect, authorize('admin', 'vendor'), getCoupons);
+router.get('/active', protect, getActiveCoupons);
+router.route('/coupons')
+    .post(protect, authorize('admin'), createCoupon)
+    .get(protect, authorize('admin'), getCoupons);
+
+router.route('/:id')
+    .put(protect, authorize('admin'), toggleCoupon)
+    .delete(protect, authorize('admin'), deleteCoupon);
 
 module.exports = router;

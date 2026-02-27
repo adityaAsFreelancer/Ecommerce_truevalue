@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Search, ShoppingCart, Bell, CheckCircle2, Truck, Home,
     Phone, Star, Receipt, MapPin, Plus, Minus, Target, ChevronLeft,
-    Package, User, HelpCircle, FileText, ChevronRight, X, Loader2
+    Package, User, HelpCircle, FileText, ChevronRight, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import HomeNavbar from '../components/home/HomeNavbar';
@@ -11,6 +11,7 @@ import showAlert from '../utils/swal';
 import { useUser } from '../context/UserContext';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
+import { PageSpinner } from '../components/common/Loaders';
 
 const OrderTrackingPage = () => {
     const { orderId } = useParams();
@@ -88,9 +89,9 @@ const OrderTrackingPage = () => {
     }, [orderId]);
 
     if (loading) return (
-        <div className="h-screen flex items-center justify-center bg-white flex-col gap-6">
-            <Loader2 className="animate-spin size-12 text-primary" />
-            <p className="font-black text-gray-400 uppercase tracking-[0.3em] text-[10px] italic">Retrieving Logistic Manifest...</p>
+        <div className="min-h-screen bg-white">
+            <HomeNavbar />
+            <PageSpinner message="Loading Order Tracking..." />
         </div>
     );
 

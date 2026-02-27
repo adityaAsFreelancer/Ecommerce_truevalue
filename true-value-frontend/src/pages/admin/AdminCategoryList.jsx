@@ -6,6 +6,7 @@ import {
 import showAlert from '../../utils/swal';
 import { useUser } from '../../context/UserContext';
 import { api } from '../../utils/api';
+import { TableSkeleton } from '../../components/common/Loaders';
 
 const AdminCategoryList = () => {
     const [categories, setCategories] = useState([]);
@@ -24,10 +25,10 @@ const AdminCategoryList = () => {
         setLoading(true);
         try {
             const response = await api('/categories');
-            setCategories(response.data || response);
+            setCategories(response.data || []);
         } catch (error) {
             console.error('Fetch Categories Error:', error);
-            showAlert({ title: 'Error', text: 'Failed to fetch categories.', icon: 'error' });
+            showAlert.error({ title: 'Error', text: 'Failed to fetch categories.' });
         } finally {
             setLoading(false);
         }
@@ -77,10 +78,10 @@ const AdminCategoryList = () => {
             if (result.isConfirmed) {
                 try {
                     await api('/categories', { method: 'POST', body: JSON.stringify(result.value) });
-                    showAlert({ title: 'Created', text: 'Category created successfully.', icon: 'success' });
                     fetchCategories();
-                } catch {
-                    showAlert({ title: 'Error', text: 'Failed to create category.', icon: 'error' });
+                    showAlert.success({ title: 'Created', text: 'Category created successfully.' });
+                } catch (err) {
+                    showAlert.error({ title: 'Error', text: 'Failed to create category.' });
                 }
             }
         });
@@ -128,28 +129,28 @@ const AdminCategoryList = () => {
             if (result.isConfirmed) {
                 try {
                     await api(`/categories/${category._id}`, { method: 'PUT', body: JSON.stringify(result.value) });
-                    showAlert({ title: 'Saved', text: 'Category updated successfully.', icon: 'success' });
                     fetchCategories();
-                } catch {
-                    showAlert({ title: 'Error', text: 'Failed to update category.', icon: 'error' });
+                    showAlert.success({ title: 'Saved', text: 'Category updated successfully.' });
+                } catch (err) {
+                    showAlert.error({ title: 'Error', text: 'Failed to update category.' });
                 }
             }
         });
     };
 
     const handleDelete = async (id) => {
-        const confirmed = await showAlert.confirm({
+        const confirmed = await showAlert.danger({
             title: 'Delete Category?',
-            text: 'This will affect all linked products and potentially delete subcategories.',
-            icon: 'warning'
+            text: 'This will affect all linked products and potentially delete subcategories. This action is irreversible.',
+            confirmButtonText: 'Yes, Delete Category'
         });
-        if (confirmed) {
+        if (confirmed.isConfirmed) {
             try {
                 await api(`/categories/${id}`, { method: 'DELETE' });
-                showAlert({ title: 'Deleted', text: 'Category removed successfully.', icon: 'success' });
                 fetchCategories();
-            } catch {
-                showAlert({ title: 'Error', text: 'Failed to delete category.', icon: 'error' });
+                showAlert.success({ title: 'Deleted', text: 'Category has been moved to archives.' });
+            } catch (err) {
+                showAlert.error({ title: 'Error', text: 'Failed to delete category.' });
             }
         }
     };
@@ -238,7 +239,7 @@ const AdminCategoryList = () => {
                 {view === 'categories' && (
                     <div className="divide-y divide-gray-50">
                         {loading ? (
-                            Array(4).fill(0).map((_, i) => <div key={i} className="p-8 h-20 animate-pulse bg-gray-50/50" />)
+                            <TableSkeleton rows={5} cols={4} />
                         ) : filteredRoots.length === 0 ? (
                             <div className="p-20 text-center">
                                 <Archive size={48} className="text-gray-100 mx-auto mb-4" />
@@ -310,7 +311,7 @@ const AdminCategoryList = () => {
                 {view === 'subcategories' && (
                     <div className="divide-y divide-gray-50">
                         {loading ? (
-                            Array(5).fill(0).map((_, i) => <div key={i} className="p-6 h-16 animate-pulse bg-gray-50/50" />)
+                            <TableSkeleton rows={5} cols={4} />
                         ) : filteredSubs.length === 0 ? (
                             <div className="p-20 text-center">
                                 <Archive size={48} className="text-gray-100 mx-auto mb-4" />

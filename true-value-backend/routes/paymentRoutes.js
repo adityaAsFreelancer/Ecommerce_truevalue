@@ -1,15 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
+const {
+    createRazorpayOrder,
+    verifyRazorpayPayment,
+    razorpayWebhook
+} = require('../controllers/paymentController');
 
-const getController = () => require('../controllers/paymentController');
-
-router.post('/stripe/checkout', protect, (req, res, next) => {
-    getController().processStripePayment(req, res, next);
-});
-
-router.post('/razorpay/order', protect, (req, res, next) => {
-    getController().createRazorpayOrder(req, res, next);
-});
+router.post('/razorpay/order', protect, createRazorpayOrder);
+router.post('/razorpay/verify', protect, verifyRazorpayPayment);
+router.post('/razorpay/webhook', razorpayWebhook);
 
 module.exports = router;

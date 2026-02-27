@@ -70,9 +70,6 @@ exports.performFacetedSearch = asyncHandler(async (req, res, next) => {
     });
 });
 
-// @desc    Real-time Autocomplete
-// @route   GET /api/search/autocomplete
-// @access  Public
 exports.getAutocomplete = asyncHandler(async (req, res, next) => {
     const { q } = req.query;
     if (!q) return res.json({ success: true, hits: [] });

@@ -8,6 +8,8 @@ import {
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import showAlert from '../../utils/swal';
 import { useUser } from '../../context/UserContext';
+import { PageSpinner } from '../../components/common/Loaders';
+import { api } from '../../utils/api';
 
 const AdminOrderDetails = () => {
     const { id } = useParams();
@@ -28,7 +30,7 @@ const AdminOrderDetails = () => {
                 setOrder(response.data || response);
             } catch (error) {
                 console.error('Fetch Order Error:', error);
-                showAlert({ title: 'Error', text: 'Failed to retrieve deployment details.', icon: 'error' });
+                showAlert.error({ title: 'Error', text: 'Failed to retrieve deployment details.' });
             } finally {
                 setLoading(false);
             }
@@ -42,19 +44,14 @@ const AdminOrderDetails = () => {
                 method: 'PUT',
                 body: JSON.stringify({ status: newStatus })
             });
-            showAlert({ title: 'Status Updated', text: `Deployment #${id} set to ${newStatus}.`, icon: 'success' });
+            showAlert.success({ title: 'Status Updated', text: `Order set to ${newStatus}.` });
             setOrder(prev => ({ ...prev, status: newStatus }));
         } catch (error) {
-            showAlert({ title: 'Error', text: 'Status update protocol failed.', icon: 'error' });
+            showAlert.error({ title: 'Error', text: 'Status update protocol failed.' });
         }
     };
 
-    if (loading) return (
-        <div className="flex items-center justify-center p-20 flex-col gap-6">
-            <div className="animate-spin size-12 border-[6px] border-primary/20 border-t-primary rounded-full" />
-            <p className="font-black text-gray-400 uppercase tracking-widest text-xs italic">Decrypting Log Entry...</p>
-        </div>
-    );
+    if (loading) return <PageSpinner message="Decrypting Log Entry..." />;
 
     if (!order) return (
         <div className="text-center p-20">

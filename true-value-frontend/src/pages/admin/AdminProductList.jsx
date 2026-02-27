@@ -8,6 +8,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import showAlert from '../../utils/swal';
 import { useUser } from '../../context/UserContext';
 import { api } from '../../utils/api';
+import { TableSkeleton } from '../../components/common/Loaders';
 
 const AdminProductList = () => {
     const navigate = useNavigate();
@@ -33,7 +34,7 @@ const AdminProductList = () => {
             });
         } catch (error) {
             console.error('Fetch Products Error:', error);
-            showAlert({ title: 'Error', text: 'Failed to fetch inventory data.', icon: 'error' });
+            showAlert.error({ title: 'Error', text: 'Failed to fetch inventory data.' });
         } finally {
             setLoading(false);
         }
@@ -44,15 +45,19 @@ const AdminProductList = () => {
     }, [searchTerm]);
 
     const handleDelete = async (id) => {
-        const confirmed = window.confirm("Are you sure you want to decommission this asset?");
+        const confirmed = await showAlert.danger({
+            title: 'Delete this product?',
+            text: 'This will permanently remove the product from inventory.',
+            confirmButtonText: 'Yes, Delete',
+        });
         if (!confirmed) return;
 
         try {
             await api(`/products/${id}`, { method: 'DELETE' });
-            showAlert({ title: 'Decommissioned', text: 'Asset successfully removed from inventory.', icon: 'success' });
+            showAlert.success({ title: '✅ Deleted!', text: 'Product removed from inventory.' });
             fetchProducts(pagination.page);
         } catch (error) {
-            showAlert({ title: 'Error', text: 'Decommissioning protocol failed.', icon: 'error' });
+            showAlert.error({ title: 'Error', text: 'Failed to delete product.' });
         }
     };
 
@@ -107,13 +112,7 @@ const AdminProductList = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {loading ? (
-                                Array(5).fill(0).map((_, i) => (
-                                    <tr key={i} className="animate-pulse">
-                                        <td colSpan="5" className="px-8 py-6">
-                                            <div className="h-12 bg-gray-100 rounded-xl w-full" />
-                                        </td>
-                                    </tr>
-                                ))
+                                <TableSkeleton rows={5} cols={6} />
                             ) : products.length === 0 ? (
                                 <tr>
                                     <td colSpan="5" className="px-8 py-20 text-center">

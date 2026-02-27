@@ -2,23 +2,26 @@ import React from 'react';
 import {
     LayoutDashboard, Package, ShoppingCart, Users,
     Settings, LogOut, ChevronRight, Menu, X, Bell, Search,
-    Layers, Megaphone
+    Layers, Megaphone, Tag
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
 
 const AdminLayout = ({ children }) => {
-    const { user, logout } = useUser();
+    const { user, logout, notifications, unreadCount, markNotificationAsRead } = useUser();
     const navigate = useNavigate();
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+    const [showNotifications, setShowNotifications] = React.useState(false);
 
     const menuItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
         { icon: Package, label: 'Products', path: '/admin/products' },
         { icon: Layers, label: 'Categories', path: '/admin/categories' },
         { icon: Megaphone, label: 'Promotions', path: '/admin/banners' },
+        { icon: Tag, label: 'Coupons', path: '/admin/coupons' },
         { icon: ShoppingCart, label: 'Orders', path: '/admin/orders' },
         { icon: Users, label: 'Users', path: '/admin/users' },
+        { icon: Settings, label: 'Settings', path: '/admin/settings' },
     ];
 
     const handleLogout = async () => {
@@ -61,10 +64,6 @@ const AdminLayout = ({ children }) => {
                     </nav>
 
                     <div className="pt-6 mt-6 border-t border-white/10 space-y-2">
-                        <button className="flex items-center gap-4 px-4 py-4 rounded-2xl w-full text-gray-400 hover:bg-white/5 hover:text-white transition-all font-bold text-xs uppercase tracking-widest">
-                            <Settings size={20} />
-                            Settings
-                        </button>
                         <button
                             onClick={handleLogout}
                             className="flex items-center gap-4 px-4 py-4 rounded-2xl w-full text-red-400 hover:bg-red-400/10 transition-all font-bold text-xs uppercase tracking-widest"
@@ -95,10 +94,56 @@ const AdminLayout = ({ children }) => {
                     </div>
 
                     <div className="flex items-center gap-6">
-                        <button className="relative p-2 text-gray-500 hover:text-primary transition-colors">
-                            <Bell size={22} />
-                            <span className="absolute top-1.5 right-1.5 size-2 bg-red-500 rounded-full border-2 border-white" />
-                        </button>
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowNotifications(!showNotifications)}
+                                className="relative p-2 text-gray-500 hover:text-primary transition-colors"
+                            >
+                                <Bell size={22} />
+                                {unreadCount > 0 && (
+                                    <span className="absolute top-1.5 right-1.5 size-4 bg-red-500 rounded-full border-2 border-white text-[9px] text-white flex items-center justify-center font-black animate-pulse">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                )}
+                            </button>
+
+                            {/* Notifications Dropdown */}
+                            {showNotifications && (
+                                <div className="absolute right-0 mt-4 w-96 bg-white rounded-3xl shadow-premium border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
+                                    <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+                                        <h3 className="font-black text-xs uppercase tracking-widest text-gray-900 italic">Recent Alerts</h3>
+                                        <span className="px-2 py-0.5 bg-primary/10 text-primary text-[9px] font-black rounded-lg uppercase">{unreadCount} New</span>
+                                    </div>
+                                    <div className="max-h-[400px] overflow-y-auto divide-y divide-gray-50">
+                                        {notifications.length === 0 ? (
+                                            <div className="p-10 text-center">
+                                                <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest italic">All clear! No alerts.</p>
+                                            </div>
+                                        ) : (
+                                            notifications.map((notif) => (
+                                                <div
+                                                    key={notif._id}
+                                                    onClick={() => markNotificationAsRead(notif._id)}
+                                                    className={`p-5 cursor-pointer hover:bg-gray-50 transition-colors ${!notif.isRead ? 'bg-primary/[0.02]' : ''}`}
+                                                >
+                                                    <div className="flex items-start gap-4">
+                                                        <div className={`size-3 rounded-full mt-1.5 shrink-0 ${!notif.isRead ? 'bg-primary' : 'bg-gray-200'}`} />
+                                                        <div>
+                                                            <p className={`text-sm tracking-tight ${!notif.isRead ? 'font-black text-gray-900' : 'font-medium text-gray-500'}`}>{notif.title}</p>
+                                                            <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">{notif.message}</p>
+                                                            <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest mt-2">{new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                    <div className="p-4 bg-gray-50 text-center">
+                                        <button onClick={() => navigate('/admin/orders')} className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline italic">View All Orders</button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                         <div className="h-8 w-px bg-gray-100" />
                         <div className="flex items-center gap-4">
                             <div className="text-right hidden sm:block">

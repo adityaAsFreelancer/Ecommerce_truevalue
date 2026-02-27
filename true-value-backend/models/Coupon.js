@@ -3,15 +3,20 @@ const mongoose = require('mongoose');
 const couponSchema = new mongoose.Schema({
     code: {
         type: String,
-        required: [true, 'Coupon code is required'],
+        required: [true, 'Please add a coupon code'],
         unique: true,
         uppercase: true,
+        trim: true
+    },
+    description: {
+        type: String,
         trim: true
     },
     discountType: {
         type: String,
         required: true,
-        enum: ['percentage', 'fixed']
+        enum: ['percentage', 'fixed'],
+        default: 'percentage'
     },
     discountValue: {
         type: Number,
@@ -22,8 +27,7 @@ const couponSchema = new mongoose.Schema({
         default: 0
     },
     maxDiscount: {
-        type: Number, // Applicable for percentage discounts
-        default: null
+        type: Number
     },
     expiryDate: {
         type: Date,
@@ -37,23 +41,16 @@ const couponSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    vendor: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Vendor',
-        default: null // null means global platform-wide coupon
-    },
     isActive: {
         type: Boolean,
         default: true
+    },
+    vendorId: {
+        type: String, // String ID of the vendor if specific
+        default: null
     }
 }, {
     timestamps: true
 });
 
-// Method to check if coupon is valid
-couponSchema.methods.isValid = function () {
-    return this.isActive && new Date() < this.expiryDate && (this.usageLimit === null || this.usedCount < this.usageLimit);
-};
-
-const Coupon = mongoose.model('Coupon', couponSchema);
-module.exports = Coupon;
+module.exports = mongoose.model('Coupon', couponSchema);

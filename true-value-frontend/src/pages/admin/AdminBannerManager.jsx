@@ -7,6 +7,7 @@ import {
 import { api } from '../../utils/api';
 import showAlert from '../../utils/swal';
 import { useUser } from '../../context/UserContext';
+import { CardSkeleton } from '../../components/common/Loaders';
 
 const AdminBannerManager = () => {
     const [banners, setBanners] = useState([]);
@@ -23,10 +24,9 @@ const AdminBannerManager = () => {
         setLoading(true);
         try {
             const response = await api('/banners');
-            setBanners(response.data || response);
+            setBanners(response.data || []);
         } catch (error) {
-            console.error('Fetch Banners Error:', error);
-            showAlert({ title: 'Error', text: 'Failed to fetch banner data.', icon: 'error' });
+            showAlert.error({ title: 'Error', text: 'Failed to fetch banner data.' });
         } finally {
             setLoading(false);
         }
@@ -90,10 +90,10 @@ const AdminBannerManager = () => {
             if (result.isConfirmed) {
                 try {
                     await api('/banners', { method: 'POST', body: JSON.stringify(result.value) });
-                    showAlert({ title: 'Success', text: 'Banner deployed successfully!', icon: 'success' });
+                    showAlert.success({ title: 'Deployed!', text: 'The new campaign banner is now live.' });
                     fetchBanners();
-                } catch (error) {
-                    showAlert({ title: 'Error', text: 'Deployment failed', icon: 'error' });
+                } catch (err) {
+                    showAlert.error({ title: 'Error', text: 'Deployment failed' });
                 }
             }
         });
@@ -107,24 +107,23 @@ const AdminBannerManager = () => {
             });
             fetchBanners();
         } catch (error) {
-            showAlert({ title: 'Error', text: 'Status update failed', icon: 'error' });
+            showAlert.error({ title: 'Error', text: 'Status update failed' });
         }
     };
 
     const handleDelete = async (id) => {
-        const confirmed = await showAlert.confirm({
+        const confirmed = await showAlert.danger({
             title: 'Terminate Banner?',
-            text: "This will remove the promotion from the frontend immediately.",
-            icon: 'warning'
+            text: "This promotion will be permanently purged from the production frontend.",
+            confirmButtonText: 'Yes, Terminate'
         });
-
-        if (confirmed) {
+        if (confirmed.isConfirmed) {
             try {
                 await api(`/banners/${id}`, { method: 'DELETE' });
-                showAlert({ title: 'Removed', text: 'Banner has been terminated.', icon: 'success' });
+                showAlert.success({ title: 'Banner Terminated', text: 'Asset removed from active rotation.' });
                 fetchBanners();
             } catch (error) {
-                showAlert({ title: 'Error', text: 'Termination failed', icon: 'error' });
+                showAlert.error({ title: 'Error', text: 'Termination failed' });
             }
         }
     };
@@ -149,9 +148,9 @@ const AdminBannerManager = () => {
             {/* Banner Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {loading ? (
-                    Array(4).fill(0).map((_, i) => (
-                        <div key={i} className="h-64 bg-gray-100 rounded-[32px] animate-pulse" />
-                    ))
+                    <div className="lg:col-span-2">
+                        <CardSkeleton count={4} />
+                    </div>
                 ) : banners.length === 0 ? (
                     <div className="lg:col-span-2 py-20 bg-white rounded-[40px] border border-dashed border-gray-200 flex flex-col items-center justify-center text-center">
                         <Megaphone size={48} className="text-gray-200 mb-4" />

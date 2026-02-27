@@ -4,8 +4,10 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import HomeNavbar from '../components/home/HomeNavbar';
 import { useUser } from '../context/UserContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const OrderConfirmationPage = () => {
+    const { t } = useLanguage();
     const navigate = useNavigate();
     const { orders } = useUser();
 
@@ -24,14 +26,14 @@ const OrderConfirmationPage = () => {
                         <ShoppingBasket size={48} className="text-gray-300 stroke-[1.5]" />
                     </div>
                     <div className="space-y-3">
-                        <h2 className="text-3xl font-black text-gray-900 uppercase italic tracking-tighter">Manifest Empty</h2>
-                        <p className="text-gray-400 font-bold italic leading-relaxed">No active procurement detected in your current session logs.</p>
+                        <h2 className="text-3xl font-black text-gray-900 uppercase italic tracking-tighter">No Orders Found</h2>
+                        <p className="text-gray-400 font-bold italic leading-relaxed">It looks like you haven't placed any orders yet.</p>
                     </div>
                     <Link
                         to="/products"
                         className="w-full bg-primary text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 hover:bg-primary-hover hover:scale-[1.03] active:scale-[0.98] transition-all shadow-2xl shadow-primary/30 uppercase tracking-[0.2em] text-xs"
                     >
-                        Initialize Fleet Store
+                        Start Shopping Now
                     </Link>
                 </div>
             </div>
@@ -65,12 +67,12 @@ const OrderConfirmationPage = () => {
                     </div>
 
                     <h1 className="text-gray-900 text-5xl md:text-8xl font-black leading-none tracking-tighter mb-6 italic uppercase animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-                        Procurement <span className="text-primary">Secured</span>
+                        Order <span className="text-primary">Confirmed!</span>
                     </h1>
 
                     <p className="text-gray-400 text-lg md:text-2xl font-bold italic flex items-center gap-3 justify-center max-w-2xl mx-auto leading-relaxed animate-in fade-in duration-1000 delay-500">
                         <Mail size={24} className="text-primary flex-shrink-0" />
-                        Manifest transmission confirmed. Check your vault inbox.
+                        Order details sent! Please check your email inbox.
                     </p>
                 </motion.div>
 
@@ -81,7 +83,7 @@ const OrderConfirmationPage = () => {
                             <div className="size-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                                 <Receipt size={24} />
                             </div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Transaction ID</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Order Number</p>
                         </div>
                         <p className="text-gray-900 text-4xl font-black tracking-tighter italic uppercase">#{id}</p>
                     </div>
@@ -91,7 +93,7 @@ const OrderConfirmationPage = () => {
                             <div className="size-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                                 <Truck size={24} />
                             </div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">ETA Logistics</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Arriving By</p>
                         </div>
                         <p className="text-gray-900 text-4xl font-black tracking-tighter italic uppercase">OCT 24, 2026</p>
                     </div>
@@ -117,27 +119,27 @@ const OrderConfirmationPage = () => {
                         className="bg-primary text-white font-black px-12 py-6 rounded-[28px] flex items-center justify-center gap-4 min-w-[280px] hover:bg-primary-hover hover:-translate-y-1.5 active:translate-y-0 active:scale-95 transition-all shadow-4xl shadow-primary/30 uppercase tracking-[0.2em] text-xs"
                     >
                         <Map size={24} />
-                        Track Intelligence
+                        Track Order Now
                     </Link>
                     <Link
                         to="/products"
                         className="bg-white border-2 border-gray-100 text-gray-900 font-black px-12 py-6 rounded-[28px] flex items-center justify-center gap-4 min-w-[280px] hover:border-gray-900 hover:shadow-2xl hover:shadow-gray-100 transition-all uppercase tracking-[0.2em] text-xs"
                     >
                         <ShoppingBasket size={24} />
-                        Fleet Store
+                        Continue Shopping
                     </Link>
                 </div>
 
                 {/* Order Summary Grid */}
                 <div className="bg-white rounded-[48px] border border-gray-100 overflow-hidden shadow-premium animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-1000">
                     <div className="flex items-center justify-between px-10 py-10 border-b border-gray-50 bg-gray-50/30">
-                        <h2 className="text-gray-900 text-3xl font-black uppercase tracking-tighter italic">Manifest Summary</h2>
+                        <h2 className="text-gray-900 text-3xl font-black uppercase tracking-tighter italic">Order Summary</h2>
                         <button
                             onClick={() => window.print()}
                             className="flex items-center gap-3 text-primary hover:text-white hover:bg-primary text-[10px] font-black uppercase tracking-[0.3em] transition-all bg-white px-6 py-3 rounded-2xl border border-primary/20 shadow-sm"
                         >
                             <Printer size={18} />
-                            Print Manifest
+                            Print Bill
                         </button>
                     </div>
 
@@ -155,7 +157,7 @@ const OrderConfirmationPage = () => {
                                             <span className="text-gray-400 font-black text-[9px] uppercase tracking-[0.3em]">ID: {item.sku || 'TV-UNIT'}</span>
                                         </div>
                                     </div>
-                                    <p className="text-gray-900 font-black text-3xl tracking-tighter italic">₹{(item.price * item.quantity).toLocaleString()}</p>
+                                    <p className="text-gray-900 font-black text-3xl tracking-tighter italic">{t('common', 'currency')}{(item.price * item.quantity).toLocaleString()}</p>
                                 </div>
                             ))}
                         </div>
@@ -165,23 +167,23 @@ const OrderConfirmationPage = () => {
                             <div className="space-y-5">
                                 <div className="flex justify-between items-center italic">
                                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Subtotal</span>
-                                    <span className="text-gray-900 text-xl font-black tracking-tighter">₹{subtotal.toLocaleString()}</span>
+                                    <span className="text-gray-900 text-xl font-black tracking-tighter">{t('common', 'currency')}{subtotal.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center italic">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Logistics</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Delivery Charge</span>
                                     <span className="text-primary font-black uppercase tracking-[0.2em] text-[10px] bg-primary/10 px-3 py-1.5 rounded-xl border border-primary/20">FREE</span>
                                 </div>
                                 <div className="flex justify-between items-center italic">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Tax Protocol</span>
-                                    <span className="text-gray-900 text-xl font-black tracking-tighter">₹{tax.toLocaleString()}</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Tax</span>
+                                    <span className="text-gray-900 text-xl font-black tracking-tighter">{t('common', 'currency')}{tax.toLocaleString()}</span>
                                 </div>
                             </div>
 
                             <div className="pt-8 border-t border-dashed border-gray-200">
                                 <div className="flex justify-between items-end">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-4">Total Value</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-4">Total Amount</span>
                                     <div className="flex flex-col items-end">
-                                        <span className="text-primary text-xl font-black italic -mb-2">₹</span>
+                                        <span className="text-primary text-xl font-black italic -mb-2">{t('common', 'currency')}</span>
                                         <span className="text-6xl font-black tracking-tighter text-gray-900">{total.toLocaleString()}</span>
                                     </div>
                                 </div>
@@ -197,16 +199,16 @@ const OrderConfirmationPage = () => {
                     <div className="relative z-10 space-y-4">
                         <h3 className="text-3xl font-black uppercase tracking-tighter italic flex items-center justify-center gap-5">
                             <HelpCircle size={32} className="text-primary" />
-                            Operations Support
+                            Customer Support
                         </h3>
                         <p className="text-gray-500 text-lg font-bold italic leading-relaxed max-w-2xl mx-auto">
-                            Our logistical specialists are available 24/7. Transmit inquiries to <button className="text-primary font-black hover:underline px-2">operations@truevalue.com</button> or call <span className="text-white">1-800-TRUE-VAL</span>.
+                            Need help? Our specialists are available 24/7. Send an email to <button className="text-primary font-black hover:underline px-2">support@truevalue.com</button> or call <span className="text-white">1-800-TRUE-VAL</span>.
                         </p>
                     </div>
 
                     <div className="flex justify-center gap-12 pt-4 relative z-10 border-t border-white/5 pt-10">
-                        <button className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] hover:text-primary transition-colors italic">Policy Protocol</button>
-                        <button className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] hover:text-primary transition-colors italic">Logistics FAQ</button>
+                        <button className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] hover:text-primary transition-colors italic">Privacy Policy</button>
+                        <button className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] hover:text-primary transition-colors italic">Delivery FAQ</button>
                     </div>
                 </div>
             </main>

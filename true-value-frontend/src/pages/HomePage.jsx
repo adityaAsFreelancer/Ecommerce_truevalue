@@ -6,7 +6,6 @@ import FlashSalesSection from '../components/home/FlashSalesSection';
 import CategoryGrid from '../components/home/CategoryGrid';
 import CategoryProductSection from '../components/home/CategoryProductSection';
 import { cmsContent } from '../data/siteData';
-import { products as allProducts } from '../data/products';
 import { useProducts } from '../context/ProductsContext';
 import {
     Carrot, Apple, Drumstick, Milk,
@@ -48,14 +47,14 @@ const HomePage = () => {
     // Group products by category - Max 6 products for efficiency
     const productsByCategory = useMemo(() => {
         const grouped = {};
-        if (!allProducts) return grouped;
+        if (!backendProducts || backendProducts.length === 0) return grouped;
 
         // Use backend categories to decide which ones to show on homepage
         const categoriesToShow = backendCategories.length > 0
             ? backendCategories.map(c => c.name).slice(0, 8)
             : homeCategories;
 
-        allProducts.forEach(p => {
+        backendProducts.forEach(p => {
             if (categoriesToShow.includes(p.category)) {
                 if (!grouped[p.category]) grouped[p.category] = [];
                 if (grouped[p.category].length < 6) {
@@ -64,7 +63,7 @@ const HomePage = () => {
             }
         });
         return grouped;
-    }, [allProducts, backendCategories]);
+    }, [backendProducts, backendCategories]);
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'instant' });
@@ -76,7 +75,7 @@ const HomePage = () => {
             <main className="flex-1 w-full max-w-[1440px] mx-auto">
                 <HomeHero content={cmsContent.hero} />
                 <OffersCarousel />
-                <FlashSalesSection products={(backendProducts.length > 0 ? backendProducts : allProducts).filter(p => p.salePrice || (p.price < 500))} />
+                <FlashSalesSection products={backendProducts.filter(p => p.salePrice || (p.price < 500))} />
                 <CategoryGrid />
 
                 <div className="space-y-4">

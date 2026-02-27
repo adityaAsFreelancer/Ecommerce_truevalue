@@ -41,6 +41,11 @@ const orderSchema = new mongoose.Schema({
         default: 'Pending',
         enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
     },
+    itemsPrice: {
+        type: Number,
+        required: true,
+        default: 0.0
+    },
     taxPrice: {
         type: Number,
         required: true,
@@ -55,6 +60,13 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         required: true,
         default: 0.0
+    },
+    deliveryDetails: {
+        baseCharge: Number,
+        distanceCharge: Number,
+        peakHourSurcharge: Number,
+        distanceKm: Number,
+        isPeakHour: Boolean
     },
     isPaid: {
         type: Boolean,
@@ -71,9 +83,41 @@ const orderSchema = new mongoose.Schema({
     },
     deliveredAt: {
         type: Date
-    }
+    },
+    // Discount Fields
+    discountAmount: {
+        type: Number,
+        default: 0.0
+    },
+    couponCode: {
+        type: String
+    },
+    // Logistics Fields
+    shiprocketOrderId: String,
+    shipmentId: String,
+    awbCode: String,
+    courierName: String,
+    timeline: [
+        {
+            status: String,
+            description: String,
+            timestamp: { type: Date, default: Date.now }
+        }
+    ]
 }, {
     timestamps: true
 });
+
+// Update status ENUM to include more states
+orderSchema.path('status').options.enum = [
+    'Pending',
+    'Processing',
+    'Shipped',
+    'Out for Delivery',
+    'Delivered',
+    'Cancelled',
+    'Return Requested',
+    'Refunded'
+];
 
 module.exports = mongoose.model('Order', orderSchema);
